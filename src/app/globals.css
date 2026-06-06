@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  /* Verde Kawasaki — cor de destaque principal */
+  --color-kawasaki-50: #f2fbe7;
+  --color-kawasaki-100: #e1f5c8;
+  --color-kawasaki-200: #c6ec97;
+  --color-kawasaki-300: #a4df5e;
+  --color-kawasaki-400: #84cf33;
+  --color-kawasaki-500: #6bbf23;
+  --color-kawasaki-600: #539817;
+  --color-kawasaki-700: #407316;
+  --color-kawasaki-800: #355b17;
+  --color-kawasaki-900: #2d4d18;
+
+  /* Tons automotivos escuros */
+  --color-ink-950: #0a0a0b;
+  --color-ink-900: #121214;
+  --color-ink-800: #1b1b1f;
+  --color-ink-700: #26262b;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(107, 191, 35, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(107, 191, 35, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(107, 191, 35, 0);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-ink-950);
+  color: #e7e7ea;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Acessibilidade: anel de foco visível e consistente */
+*:focus-visible {
+  outline: 2px solid var(--color-kawasaki-400);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
