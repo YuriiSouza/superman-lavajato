@@ -5,7 +5,7 @@ import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
 import {
   LayoutDashboard, Users, ClipboardList, MessageCircle,
-  UsersRound, DollarSign, BarChart2, LogOut,
+  UsersRound, DollarSign, Settings, LogOut,
 } from 'lucide-react';
 
 const nav = [
@@ -20,6 +20,9 @@ const nav = [
   ]},
   { label: 'Financeiro', items: [
     { href: '/admin/financeiro', icon: DollarSign, label: 'Caixa do dia' },
+  ]},
+  { label: 'Sistema', items: [
+    { href: '/admin/configuracoes', icon: Settings, label: 'Configurações' },
   ]},
 ];
 

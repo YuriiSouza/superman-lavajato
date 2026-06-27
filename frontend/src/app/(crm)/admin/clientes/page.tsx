@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
-import { Search, Plus, X, ChevronRight } from 'lucide-react';
+import { Search, Plus, X, ChevronRight, Car, Trash2 } from 'lucide-react';
 import { crm } from '@/lib/crm/api';
+
+const VEHICLE_TYPES = ['SEDAN', 'SUV', 'HATCH', 'PICKUP', 'MOTO', 'OUTRO'];
 
 function Avatar({ name }: { name: string }) {
   const initials = name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase();
@@ -19,7 +21,7 @@ function Modal({ open, onClose, title, children }: any) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-md p-6 relative">
+      <div className="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-semibold text-gray-900">{title}</h3>
           <button onClick={onClose}><X size={18} className="text-gray-400 hover:text-gray-700" /></button>
@@ -34,10 +36,13 @@ export default function ClientesPage() {
   const [clients, setClients] = useState<any[]>([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-  const [modal, setModal] = useState(false);
+  const [modal, setModal] = useState<'client' | 'detail' | null>(null);
   const [form, setForm] = useState({ name: '', phone: '', notes: '' });
+  const [vehicleForm, setVehicleForm] = useState({ plate: '', model: '', color: '', type: 'SEDAN' });
   const [saving, setSaving] = useState(false);
   const [selected, setSelected] = useState<any>(null);
+  const [detail, setDetail] = useState<any>(null);
+  const [loadingDetail, setLoadingDetail] = useState(false);
   const [, startTransition] = useTransition();
 
   const load = (q?: string) => {
@@ -52,16 +57,26 @@ export default function ClientesPage() {
     startTransition(() => load(q));
   }
 
-  async function handleSave() {
+  async function openDetail(c: any) {
+    setLoadingDetail(true);
+    setModal('detail');
+    setSelected(c);
+    setVehicleForm({ plate: '', model: '', color: '', type: 'SEDAN' });
+    const full = await crm.clients.get(c.id);
+    setDetail(full);
+    setLoadingDetail(false);
+  }
+
+  async function handleSaveClient() {
     if (!form.name || !form.phone) return;
     setSaving(true);
     try {
-      if (selected) {
+      if (selected && modal === 'client') {
         await crm.clients.update(selected.id, form);
       } else {
         await crm.clients.create(form);
       }
-      setModal(false);
+      setModal(null);
       setForm({ name: '', phone: '', notes: '' });
       setSelected(null);
       load(search);
@@ -70,10 +85,30 @@ export default function ClientesPage() {
     }
   }
 
+  async function handleAddVehicle() {
+    if (!vehicleForm.plate || !vehicleForm.model || !selected) return;
+    setSaving(true);
+    try {
+      await crm.vehicles.create({ ...vehicleForm, clientId: selected.id });
+      setVehicleForm({ plate: '', model: '', color: '', type: 'SEDAN' });
+      const full = await crm.clients.get(selected.id);
+      setDetail(full);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleRemoveVehicle(vehicleId: string) {
+    if (!confirm('Remover este veículo?')) return;
+    await crm.vehicles.remove(vehicleId);
+    const full = await crm.clients.get(selected.id);
+    setDetail(full);
+  }
+
   function openEdit(c: any) {
     setSelected(c);
     setForm({ name: c.name, phone: c.phone, notes: c.notes ?? '' });
-    setModal(true);
+    setModal('client');
   }
 
   const segmentLabel = (c: any) => {
@@ -91,7 +126,7 @@ export default function ClientesPage() {
           <p className="text-sm text-gray-500">{clients.length} cadastrados</p>
         </div>
         <button
-          onClick={() => { setSelected(null); setForm({ name: '', phone: '', notes: '' }); setModal(true); }}
+          onClick={() => { setSelected(null); setForm({ name: '', phone: '', notes: '' }); setModal('client'); }}
           className="flex items-center gap-2 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus size={16} /> Novo cliente
@@ -114,7 +149,7 @@ export default function ClientesPage() {
           [...Array(5)].map((_, i) => (
             <div key={i} className="flex items-center gap-3 p-4 animate-pulse">
               <div className="w-9 h-9 rounded-full bg-gray-200" />
-              <div className="flex-1 space-y-1">
+              <div className="flex-1 space-y-1.5">
                 <div className="h-3 bg-gray-200 rounded w-32" />
                 <div className="h-3 bg-gray-200 rounded w-24" />
               </div>
@@ -126,7 +161,7 @@ export default function ClientesPage() {
           clients.map((c) => {
             const seg = segmentLabel(c);
             return (
-              <div key={c.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer" onClick={() => openEdit(c)}>
+              <div key={c.id} className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 cursor-pointer" onClick={() => openDetail(c)}>
                 <Avatar name={c.name} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -142,17 +177,20 @@ export default function ClientesPage() {
         )}
       </div>
 
-      <Modal open={modal} onClose={() => setModal(false)} title={selected ? 'Editar cliente' : 'Novo cliente'}>
+      {/* Modal criar/editar cliente */}
+      <Modal open={modal === 'client'} onClose={() => setModal(null)} title={selected ? 'Editar cliente' : 'Novo cliente'}>
         <div className="space-y-3">
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">Nome *</label>
             <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="João Silva" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              placeholder="João Silva"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">Telefone (WhatsApp) *</label>
             <input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })}
-              placeholder="(11) 99999-9999" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              placeholder="(11) 99999-9999"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">Observações</label>
@@ -161,13 +199,97 @@ export default function ClientesPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none" />
           </div>
           <div className="flex gap-2 pt-2">
-            <button onClick={() => setModal(false)} className="flex-1 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
-            <button onClick={handleSave} disabled={saving || !form.name || !form.phone}
+            <button onClick={() => setModal(null)} className="flex-1 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
+            <button onClick={handleSaveClient} disabled={saving || !form.name || !form.phone}
               className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60">
               {saving ? 'Salvando...' : 'Salvar'}
             </button>
           </div>
         </div>
+      </Modal>
+
+      {/* Modal detalhe do cliente + veículos */}
+      <Modal open={modal === 'detail'} onClose={() => setModal(null)} title={selected?.name ?? 'Cliente'}>
+        {loadingDetail ? (
+          <div className="space-y-3 animate-pulse">
+            <div className="h-4 bg-gray-200 rounded w-40" />
+            <div className="h-4 bg-gray-200 rounded w-32" />
+          </div>
+        ) : detail && (
+          <div className="space-y-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm text-gray-500">{detail.phone}</p>
+                {detail.notes && <p className="text-sm text-gray-400 mt-1">{detail.notes}</p>}
+              </div>
+              <button onClick={() => openEdit(detail)} className="text-xs text-blue-600 hover:underline">Editar dados</button>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+                  <Car size={15} /> Veículos ({detail.vehicles?.length ?? 0})
+                </p>
+              </div>
+
+              {detail.vehicles?.length === 0 ? (
+                <p className="text-xs text-gray-400 mb-3">Nenhum veículo cadastrado.</p>
+              ) : (
+                <div className="space-y-1 mb-3">
+                  {detail.vehicles.map((v: any) => (
+                    <div key={v.id} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2">
+                      <div>
+                        <span className="font-mono text-xs text-gray-700 font-semibold">{v.plate}</span>
+                        <span className="text-xs text-gray-500 ml-2">{v.model} {v.color && `· ${v.color}`} · {v.type}</span>
+                      </div>
+                      <button onClick={() => handleRemoveVehicle(v.id)} className="text-red-400 hover:text-red-600 p-1">
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="border border-dashed border-gray-300 rounded-lg p-3 space-y-2">
+                <p className="text-xs font-medium text-gray-600">Adicionar veículo</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <input value={vehicleForm.plate} onChange={(e) => setVehicleForm({ ...vehicleForm, plate: e.target.value.toUpperCase() })}
+                    placeholder="ABC-1234"
+                    className="px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <input value={vehicleForm.model} onChange={(e) => setVehicleForm({ ...vehicleForm, model: e.target.value })}
+                    placeholder="HB20"
+                    className="px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <input value={vehicleForm.color} onChange={(e) => setVehicleForm({ ...vehicleForm, color: e.target.value })}
+                    placeholder="Cor (ex: Prata)"
+                    className="px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" />
+                  <select value={vehicleForm.type} onChange={(e) => setVehicleForm({ ...vehicleForm, type: e.target.value })}
+                    className="px-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500">
+                    {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <button onClick={handleAddVehicle} disabled={saving || !vehicleForm.plate || !vehicleForm.model}
+                  className="w-full py-1.5 bg-gray-900 text-white text-xs rounded-lg hover:bg-gray-700 disabled:opacity-50">
+                  {saving ? 'Adicionando...' : 'Adicionar veículo'}
+                </button>
+              </div>
+            </div>
+
+            {detail.orders?.length > 0 && (
+              <div>
+                <p className="text-sm font-semibold text-gray-900 mb-2">Últimos atendimentos</p>
+                <div className="space-y-1">
+                  {detail.orders.slice(0, 5).map((o: any) => (
+                    <div key={o.id} className="flex items-center justify-between text-xs py-1.5 border-b border-gray-100">
+                      <span className="text-gray-600">{o.service?.name}</span>
+                      <span className="text-gray-400">{new Date(o.createdAt).toLocaleDateString('pt-BR')}</span>
+                      <span className="font-medium text-gray-900">R$ {Number(o.totalValue).toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </Modal>
     </div>
   );

@@ -47,4 +47,9 @@ export const crm = {
     create: (data: any) => api.post('/service-orders', data).then((r) => r.data),
     update: (id: string, data: any) => api.put(`/service-orders/${id}`, data).then((r) => r.data),
   },
+
+  auth: {
+    changePassword: (data: { currentPassword: string; newPassword: string }) =>
+      api.patch('/auth/change-password', data).then((r) => r.data),
+  },
 };
