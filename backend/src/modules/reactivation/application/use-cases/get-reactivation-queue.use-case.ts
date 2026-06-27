@@ -8,6 +8,8 @@ export class GetReactivationQueueUseCase {
   async execute(thresholdDays = 30) {
     const cutoff = new Date(Date.now() - thresholdDays * 24 * 60 * 60 * 1000);
 
+    // Busca todos os clientes — filtrar no JS é mais simples que uma subquery Prisma
+    // com agregação de data máxima por cliente
     const clients = await this.prisma.client.findMany({
       include: {
         vehicles: { select: { plate: true, model: true, color: true } },

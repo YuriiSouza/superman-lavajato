@@ -39,6 +39,7 @@ export class GetSegmentsUseCase {
 
       if (daysSinceLast > 30) { churn.push(enriched); continue; }
       if (hasPremiumVehicle) premium.push(enriched);
+      // VIP e regular não são mutuamente exclusivos com premium — um cliente SUV frequente entra nos dois
       if (completedOrders.length >= 4 && daysSinceLast <= 7) vip.push(enriched);
       else regular.push(enriched);
     }

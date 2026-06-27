@@ -37,77 +37,61 @@ export default function ConfiguracoesPage() {
   return (
     <div className="p-6 max-w-lg space-y-8">
       <div>
-        <h1 className="text-lg font-semibold text-gray-900">Configurações</h1>
-        <p className="text-sm text-gray-500">Gerencie sua conta</p>
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Configurações</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Gerencie sua conta</p>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
-        <h2 className="text-sm font-semibold text-gray-900">Usuário logado</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5 space-y-3">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Usuário logado</h2>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold text-sm">
+          <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-700 dark:text-blue-400 font-semibold text-sm">
             {session?.user?.name?.[0]?.toUpperCase() ?? 'A'}
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900">{session?.user?.name ?? '—'}</p>
-            <p className="text-xs text-gray-500">{session?.user?.email ?? '—'}</p>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{session?.user?.name ?? '—'}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{session?.user?.email ?? '—'}</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Alterar senha</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Alterar senha</h2>
         <form onSubmit={handleChangePassword} className="space-y-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Senha atual</label>
-            <input
-              type="password"
-              value={form.currentPassword}
-              onChange={(e) => setForm({ ...form, currentPassword: e.target.value })}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Nova senha</label>
-            <input
-              type="password"
-              value={form.newPassword}
-              onChange={(e) => setForm({ ...form, newPassword: e.target.value })}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Confirmar nova senha</label>
-            <input
-              type="password"
-              value={form.confirmPassword}
-              onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+          {(['currentPassword', 'newPassword', 'confirmPassword'] as const).map((field) => (
+            <div key={field}>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {field === 'currentPassword' ? 'Senha atual' : field === 'newPassword' ? 'Nova senha' : 'Confirmar nova senha'}
+              </label>
+              <input
+                type="password"
+                value={form[field]}
+                onChange={(e) => setForm({ ...form, [field]: e.target.value })}
+                required
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          ))}
           {msg && (
-            <p className={`text-xs px-3 py-2 rounded-lg ${msg.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+            <p className={`text-xs px-3 py-2 rounded-lg ${
+              msg.type === 'success'
+                ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+                : 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+            }`}>
               {msg.text}
             </p>
           )}
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60"
-          >
+          <button type="submit" disabled={saving}
+            className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-60 transition-colors">
             {saving ? 'Salvando...' : 'Alterar senha'}
           </button>
         </form>
       </div>
 
-      <div className="bg-white rounded-xl border border-red-100 p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">Sair do sistema</h2>
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-red-100 dark:border-red-900/40 p-5">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Sair do sistema</h2>
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="w-full py-2 border border-red-300 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50"
-        >
+          className="w-full py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
           Encerrar sessão
         </button>
       </div>

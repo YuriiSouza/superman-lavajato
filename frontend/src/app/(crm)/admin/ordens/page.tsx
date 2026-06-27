@@ -4,27 +4,36 @@ import { useEffect, useState } from 'react';
 import { Plus, X } from 'lucide-react';
 import { crm } from '@/lib/crm/api';
 
-const STATUS_LABELS: Record<string, string> = {
+const STATUS_OPTIONS = ['PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDO', 'CANCELADO'] as const;
+const STATUS_LABEL: Record<string, string> = {
   PENDENTE: 'Aguardando', EM_ANDAMENTO: 'Em andamento', CONCLUIDO: 'Concluído', CANCELADO: 'Cancelado',
 };
-const STATUS_CLS: Record<string, string> = {
-  PENDENTE: 'bg-blue-100 text-blue-700',
-  EM_ANDAMENTO: 'bg-yellow-100 text-yellow-700',
-  CONCLUIDO: 'bg-green-100 text-green-700',
-  CANCELADO: 'bg-red-100 text-red-700',
+const STATUS_COLOR: Record<string, string> = {
+  PENDENTE: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
+  EM_ANDAMENTO: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
+  CONCLUIDO: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+  CANCELADO: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
 };
-const PAYMENT_LABELS: Record<string, string> = {
+const PAYMENT_OPTIONS = ['PIX', 'DINHEIRO', 'CARTAO_CREDITO', 'CARTAO_DEBITO'];
+const PAYMENT_LABEL: Record<string, string> = {
   PIX: 'Pix', DINHEIRO: 'Dinheiro', CARTAO_CREDITO: 'Crédito', CARTAO_DEBITO: 'Débito',
 };
+
+const FILTER_TABS = [
+  { key: '', label: 'Todas' },
+  { key: 'PENDENTE', label: 'Aguardando' },
+  { key: 'EM_ANDAMENTO', label: 'Em andamento' },
+  { key: 'CONCLUIDO', label: 'Concluídas' },
+];
 
 function Modal({ open, onClose, title, children }: any) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-xl shadow-lg w-full max-w-lg p-6 relative">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-lg p-6 relative max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-          <button onClick={onClose}><X size={18} className="text-gray-400" /></button>
+          <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+          <button onClick={onClose}><X size={18} className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200" /></button>
         </div>
         {children}
       </div>
@@ -32,120 +41,139 @@ function Modal({ open, onClose, title, children }: any) {
   );
 }
 
+const inputCls = 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500';
+
 export default function OrdensPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('today');
+  const [filter, setFilter] = useState('');
   const [modal, setModal] = useState(false);
+
+  // Dados para o modal de nova OS (carregados uma vez)
   const [clients, setClients] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
+
+  // Estado do formulário de nova OS
+  const [form, setForm] = useState({
+    clientId: '', vehicleId: '', serviceId: '', paymentMethod: 'PIX', notes: '',
+  });
   const [vehicles, setVehicles] = useState<any[]>([]);
-  const [form, setForm] = useState({ clientId: '', vehicleId: '', serviceId: '', totalValue: '', paymentMethod: 'PIX', notes: '' });
+  const [totalValue, setTotalValue] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const load = () => {
+  const loadOrders = (status?: string) => {
     setLoading(true);
-    const fn = filter === 'today' ? crm.orders.today() : crm.orders.list(filter !== 'all' ? { status: filter } : {});
-    fn.then(setOrders).finally(() => setLoading(false));
+    crm.orders.list(status ? { status } : {}).then(setOrders).finally(() => setLoading(false));
   };
 
-  useEffect(() => { load(); }, [filter]);
+  useEffect(() => { loadOrders(); }, []);
 
-  async function openNew() {
-    const [c, s] = await Promise.all([crm.clients.list(), crm.services.list()]);
-    setClients(c);
-    setServices(s);
-    setVehicles([]);
-    setForm({ clientId: '', vehicleId: '', serviceId: '', totalValue: '', paymentMethod: 'PIX', notes: '' });
-    setModal(true);
+  useEffect(() => {
+    if (modal && clients.length === 0) {
+      // Só busca clientes e serviços quando o modal é aberto pela primeira vez
+      Promise.all([crm.clients.list(), crm.services.list()]).then(([c, s]) => {
+        setClients(c);
+        setServices(s);
+      });
+    }
+  }, [modal]);
+
+  function handleFilter(status: string) {
+    setFilter(status);
+    loadOrders(status || undefined);
   }
 
-  async function handleClientChange(id: string) {
-    setForm((f) => ({ ...f, clientId: id, vehicleId: '' }));
-    if (id) {
-      const v = await crm.vehicles.list(id);
-      setVehicles(v);
+  // Quando o cliente muda, busca os veículos daquele cliente
+  async function handleClientChange(clientId: string) {
+    setForm((f) => ({ ...f, clientId, vehicleId: '' }));
+    if (clientId) {
+      const vList = await crm.vehicles.list(clientId);
+      setVehicles(vList);
+    } else {
+      setVehicles([]);
     }
   }
 
-  function handleServiceChange(id: string) {
-    const svc = services.find((s) => s.id === id);
-    setForm((f) => ({ ...f, serviceId: id, totalValue: svc ? String(svc.price) : f.totalValue }));
+  // Quando o serviço muda, preenche automaticamente o valor
+  function handleServiceChange(serviceId: string) {
+    const svc = services.find((s) => s.id === serviceId);
+    setForm((f) => ({ ...f, serviceId }));
+    setTotalValue(svc ? String(svc.price) : '');
   }
 
-  async function handleSave() {
-    if (!form.clientId || !form.vehicleId || !form.serviceId || !form.totalValue) return;
+  async function handleUpdateStatus(id: string, status: string) {
+    await crm.orders.update(id, { status });
+    loadOrders(filter || undefined);
+  }
+
+  async function handleCreate() {
+    if (!form.clientId || !form.vehicleId || !form.serviceId || !totalValue) return;
     setSaving(true);
     try {
-      await crm.orders.create({ ...form, totalValue: parseFloat(form.totalValue) });
+      await crm.orders.create({ ...form, totalValue: parseFloat(totalValue) });
       setModal(false);
-      load();
+      setForm({ clientId: '', vehicleId: '', serviceId: '', paymentMethod: 'PIX', notes: '' });
+      setTotalValue('');
+      setVehicles([]);
+      loadOrders(filter || undefined);
     } finally {
       setSaving(false);
     }
   }
 
-  async function updateStatus(id: string, status: string) {
-    await crm.orders.update(id, { status });
-    load();
-  }
-
-  const total = orders.reduce((s, o) => s + Number(o.totalValue), 0);
-  const fmt = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
 
   return (
     <div className="p-6 space-y-5">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-lg font-semibold text-gray-900">Ordens de serviço</h1>
-          <p className="text-sm text-gray-500">{orders.length} ordens · total {fmt(total)}</p>
-        </div>
-        <button onClick={openNew} className="flex items-center gap-2 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700">
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ordens de serviço</h1>
+        <button onClick={() => setModal(true)}
+          className="flex items-center gap-2 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
           <Plus size={16} /> Nova OS
         </button>
       </div>
 
-      <div className="flex gap-2 flex-wrap">
-        {[['today', 'Hoje'], ['all', 'Todas'], ['PENDENTE', 'Aguardando'], ['EM_ANDAMENTO', 'Em andamento'], ['CONCLUIDO', 'Concluídas']].map(([v, l]) => (
-          <button key={v} onClick={() => setFilter(v)}
-            className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${filter === v ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}`}>
-            {l}
+      <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 w-fit">
+        {FILTER_TABS.map((t) => (
+          <button key={t.key} onClick={() => handleFilter(t.key)}
+            className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
+              filter === t.key
+                ? 'bg-white dark:bg-gray-700 font-medium shadow-sm text-gray-900 dark:text-gray-100'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+            }`}>
+            {t.label}
           </button>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-sm text-gray-400">Carregando...</div>
+          <div className="p-4 space-y-3">
+            {[...Array(5)].map((_, i) => <div key={i} className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />)}
+          </div>
         ) : orders.length === 0 ? (
-          <div className="p-8 text-center text-sm text-gray-400">Nenhuma ordem encontrada.</div>
+          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-12">Nenhuma ordem encontrada.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">Placa</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">Cliente</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">Serviço</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500">Pagamento</th>
-                <th className="text-right px-4 py-3 text-xs font-medium text-gray-500">Valor</th>
-                <th className="text-center px-4 py-3 text-xs font-medium text-gray-500">Status</th>
+            <thead>
+              <tr className="border-b border-gray-100 dark:border-gray-700">
+                {['Placa', 'Cliente', 'Serviço', 'Pagamento', 'Valor', 'Status'].map((h) => (
+                  <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{h}</th>
+                ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {orders.map((o) => (
-                <tr key={o.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-mono text-xs text-gray-700 bg-gray-50">{o.vehicle?.plate}</td>
-                  <td className="px-4 py-3 text-gray-900">{o.client?.name}</td>
-                  <td className="px-4 py-3 text-gray-600">{o.service?.name}</td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{PAYMENT_LABELS[o.paymentMethod] ?? o.paymentMethod}</td>
-                  <td className="px-4 py-3 text-right font-medium text-gray-900">{fmt(Number(o.totalValue))}</td>
-                  <td className="px-4 py-3 text-center">
-                    <select
-                      value={o.status}
-                      onChange={(e) => updateStatus(o.id, e.target.value)}
-                      className={`text-xs px-2 py-0.5 rounded-full font-medium border-0 cursor-pointer ${STATUS_CLS[o.status]}`}
-                    >
-                      {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <td className="px-4 py-3 font-mono text-xs text-gray-600 dark:text-gray-300">{o.vehicle?.plate}</td>
+                  <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{o.client?.name}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{o.service?.name}</td>
+                  <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{PAYMENT_LABEL[o.paymentMethod]}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{fmt(o.totalValue)}</td>
+                  <td className="px-4 py-3">
+                    <select value={o.status} onChange={(e) => handleUpdateStatus(o.id, e.target.value)}
+                      className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-blue-500 ${STATUS_COLOR[o.status]} bg-transparent`}>
+                      {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
                     </select>
                   </td>
                 </tr>
@@ -157,55 +185,53 @@ export default function OrdensPage() {
 
       <Modal open={modal} onClose={() => setModal(false)} title="Nova ordem de serviço">
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Cliente *</label>
-              <select value={form.clientId} onChange={(e) => handleClientChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Selecionar cliente</option>
-                {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Veículo *</label>
-              <select value={form.vehicleId} onChange={(e) => setForm({ ...form, vehicleId: e.target.value })}
-                disabled={!form.clientId || vehicles.length === 0}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-400">
-                <option value="">{vehicles.length === 0 ? 'Selecione o cliente primeiro' : 'Selecionar veículo'}</option>
-                {vehicles.map((v) => <option key={v.id} value={v.id}>{v.plate} — {v.model}</option>)}
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Serviço *</label>
-              <select value={form.serviceId} onChange={(e) => handleServiceChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">Selecionar serviço</option>
-                {services.map((s) => <option key={s.id} value={s.id}>{s.name} — R$ {Number(s.price).toFixed(2)}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Valor total (R$) *</label>
-              <input type="number" step="0.01" value={form.totalValue} onChange={(e) => setForm({ ...form, totalValue: e.target.value })}
-                placeholder="80.00" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Pagamento *</label>
-              <select value={form.paymentMethod} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                {Object.entries(PAYMENT_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-              </select>
-            </div>
-            <div className="col-span-2">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Observações</label>
-              <input value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                placeholder="Ex: veículo muito sujo" className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Cliente *</label>
+            <select value={form.clientId} onChange={(e) => handleClientChange(e.target.value)} className={inputCls}>
+              <option value="">Selecione...</option>
+              {clients.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Veículo *</label>
+            <select value={form.vehicleId} onChange={(e) => setForm({ ...form, vehicleId: e.target.value })}
+              disabled={!form.clientId} className={inputCls}>
+              <option value="">Selecione o cliente primeiro</option>
+              {vehicles.map((v) => <option key={v.id} value={v.id}>{v.plate} — {v.model}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Serviço *</label>
+            <select value={form.serviceId} onChange={(e) => handleServiceChange(e.target.value)} className={inputCls}>
+              <option value="">Selecione...</option>
+              {services.map((s) => <option key={s.id} value={s.id}>{s.name} — R$ {Number(s.price).toFixed(2)}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor total (R$) *</label>
+            <input type="number" step="0.01" value={totalValue}
+              onChange={(e) => setTotalValue(e.target.value)} placeholder="0.00" className={inputCls} />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Forma de pagamento *</label>
+            <select value={form.paymentMethod} onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })} className={inputCls}>
+              {PAYMENT_OPTIONS.map((p) => <option key={p} value={p}>{PAYMENT_LABEL[p]}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
+            <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
+              rows={2} className={`${inputCls} resize-none`} />
           </div>
           <div className="flex gap-2 pt-2">
-            <button onClick={() => setModal(false)} className="flex-1 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">Cancelar</button>
-            <button onClick={handleSave} disabled={saving || !form.clientId || !form.vehicleId || !form.serviceId}
+            <button onClick={() => setModal(false)}
+              className="flex-1 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+              Cancelar
+            </button>
+            <button onClick={handleCreate}
+              disabled={saving || !form.clientId || !form.vehicleId || !form.serviceId || !totalValue}
               className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60">
-              {saving ? 'Salvando...' : 'Criar OS'}
+              {saving ? 'Criando...' : 'Criar OS'}
             </button>
           </div>
         </div>

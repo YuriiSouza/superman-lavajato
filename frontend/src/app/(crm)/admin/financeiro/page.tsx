@@ -24,13 +24,17 @@ export default function FinanceiroPage() {
     <div className="p-6 space-y-5">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-lg font-semibold text-gray-900">Financeiro</h1>
-          <p className="text-sm text-gray-500">{PERIOD_LABELS[period]}</p>
+          <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Financeiro</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{PERIOD_LABELS[period]}</p>
         </div>
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
           {(['day', 'week', 'month'] as const).map((p) => (
             <button key={p} onClick={() => setPeriod(p)}
-              className={`text-xs px-3 py-1.5 rounded-md transition-colors ${period === p ? 'bg-white font-medium shadow-sm text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}>
+              className={`text-xs px-3 py-1.5 rounded-md transition-colors ${
+                period === p
+                  ? 'bg-white dark:bg-gray-700 font-medium shadow-sm text-gray-900 dark:text-gray-100'
+                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+              }`}>
               {PERIOD_LABELS[p]}
             </button>
           ))}
@@ -39,32 +43,32 @@ export default function FinanceiroPage() {
 
       {loading ? (
         <div className="grid grid-cols-2 gap-4 animate-pulse">
-          {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-gray-200 rounded-xl" />)}
+          {[...Array(4)].map((_, i) => <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-xl" />)}
         </div>
       ) : data && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <p className="text-xs text-gray-500 mb-2">Receita total</p>
-              <p className="text-2xl font-semibold text-green-600">{fmt(data.total)}</p>
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Receita total</p>
+              <p className="text-2xl font-semibold text-green-600 dark:text-green-400">{fmt(data.total)}</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <p className="text-xs text-gray-500 mb-2">Atendimentos</p>
-              <p className="text-2xl font-semibold text-gray-900">{data.ordersCount}</p>
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Atendimentos</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{data.ordersCount}</p>
             </div>
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <p className="text-xs text-gray-500 mb-2">Ticket médio</p>
-              <p className="text-2xl font-semibold text-gray-900">
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Ticket médio</p>
+              <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100">
                 {data.ordersCount > 0 ? fmt(data.total / data.ordersCount) : 'R$ 0,00'}
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">Por serviço</h2>
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Por serviço</h2>
               {Object.keys(data.byService ?? {}).length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-6">Sem dados.</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-6">Sem dados.</p>
               ) : (
                 <div className="space-y-3">
                   {Object.entries(data.byService ?? {})
@@ -74,10 +78,10 @@ export default function FinanceiroPage() {
                       return (
                         <div key={name}>
                           <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="text-gray-700">{name}</span>
-                            <span className="text-gray-500">{info.count}x · {fmt(info.revenue)}</span>
+                            <span className="text-gray-700 dark:text-gray-300">{name}</span>
+                            <span className="text-gray-500 dark:text-gray-400">{info.count}x · {fmt(info.revenue)}</span>
                           </div>
-                          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                             <div className="h-full bg-blue-500 rounded-full" style={{ width: `${pct}%` }} />
                           </div>
                         </div>
@@ -87,10 +91,10 @@ export default function FinanceiroPage() {
               )}
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-5">
-              <h2 className="text-sm font-semibold text-gray-900 mb-4">Por forma de pagamento</h2>
+            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">Por forma de pagamento</h2>
               {Object.keys(data.byPayment ?? {}).length === 0 ? (
-                <p className="text-sm text-gray-400 text-center py-6">Sem dados.</p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-6">Sem dados.</p>
               ) : (
                 <div className="space-y-3">
                   {Object.entries(data.byPayment ?? {})
@@ -100,10 +104,10 @@ export default function FinanceiroPage() {
                       return (
                         <div key={method}>
                           <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="text-gray-700">{PAYMENT_LABELS[method] ?? method}</span>
-                            <span className="text-gray-500">{fmt(value)} ({pct.toFixed(0)}%)</span>
+                            <span className="text-gray-700 dark:text-gray-300">{PAYMENT_LABELS[method] ?? method}</span>
+                            <span className="text-gray-500 dark:text-gray-400">{fmt(value)} ({pct.toFixed(0)}%)</span>
                           </div>
-                          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                             <div className="h-full bg-green-500 rounded-full" style={{ width: `${pct}%` }} />
                           </div>
                         </div>

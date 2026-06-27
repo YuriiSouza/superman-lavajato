@@ -36,6 +36,7 @@ export class LoginUseCase {
       expiresIn: this.config.get('JWT_REFRESH_EXPIRATION', '7d'),
     });
 
+    // Armazena no Redis para poder invalidar o refresh token no logout sem precisar de blocklist JWT
     await this.redis.set(`refresh:${user.id}`, refreshToken, 7 * 24 * 60 * 60);
 
     res.cookie('access_token', accessToken, { httpOnly: true, sameSite: 'strict' });
