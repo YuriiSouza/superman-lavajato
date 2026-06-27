@@ -5,6 +5,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { SITE } from "@/lib/site";
+import AuthSessionProvider from "@/components/crm/SessionProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -52,6 +53,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={inter.variable}>
       <body className="font-sans antialiased">
+        <AuthSessionProvider>
         <a
           href="#conteudo"
           className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-lg focus:bg-kawasaki-500 focus:px-4 focus:py-2 focus:font-semibold focus:text-ink-950"
@@ -62,6 +64,7 @@ export default function RootLayout({
         <main id="conteudo">{children}</main>
         <Footer />
         <WhatsAppButton />
+        </AuthSessionProvider>
       </body>
     </html>
   );
