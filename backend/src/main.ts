@@ -34,6 +34,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
 
+  const httpAdapter = app.getHttpAdapter();
+  httpAdapter.get('/health', (_req: any, res: any) => res.status(200).json({ status: 'ok' }));
+
   const port = process.env.PORT || 3001;
   await app.listen(port);
   console.log(`🦸 Superman CRM rodando em http://localhost:${port}`);
