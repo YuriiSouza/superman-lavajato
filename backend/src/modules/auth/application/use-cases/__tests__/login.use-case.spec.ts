@@ -8,10 +8,9 @@ const mockUser = {
   password: 'hashed',
 };
 
-const prisma = { user: { findUnique: jest.fn() } };
+const prisma = { user: { findUnique: jest.fn(), update: jest.fn() } };
 const jwtService = { sign: jest.fn().mockReturnValue('token') };
 const config = { get: jest.fn().mockReturnValue('secret') };
-const redis = { set: jest.fn() };
 const bcrypt = { compare: jest.fn(), hash: jest.fn() };
 const res = { cookie: jest.fn() };
 
@@ -24,20 +23,23 @@ describe('LoginUseCase', () => {
       prisma as any,
       jwtService as any,
       config as any,
-      redis as any,
       bcrypt as any,
     );
   });
 
   it('should return accessToken and user on valid credentials', async () => {
     prisma.user.findUnique.mockResolvedValue(mockUser);
+    prisma.user.update.mockResolvedValue(mockUser);
     bcrypt.compare.mockResolvedValue(true);
 
     const result = await useCase.execute({ email: mockUser.email, password: 'pass' }, res);
 
     expect(result.accessToken).toBe('token');
     expect(result.user.id).toBe(mockUser.id);
-    expect(redis.set).toHaveBeenCalledWith(`refresh:${mockUser.id}`, 'token', expect.any(Number));
+    expect(prisma.user.update).toHaveBeenCalledWith({
+      where: { id: mockUser.id },
+      data: { hashedRefreshToken: 'token' },
+    });
     expect(res.cookie).toHaveBeenCalledTimes(2);
   });
 

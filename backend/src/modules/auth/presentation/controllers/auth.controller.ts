@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Patch, Post, Res, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Response } from 'express';
 import { LoginDto } from '../../application/dtos/login.dto';
@@ -27,11 +27,16 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Renovar access token' })
-  async refreshHandler(@CurrentUser() user: any, @Res({ passthrough: true }) res: Response) {
-    return this.refresh.execute(user.id, res);
+  @ApiOperation({ summary: 'Renovar access token usando refresh token' })
+  async refreshHandler(
+    @Headers('authorization') authorization: string,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const refreshToken = authorization?.startsWith('Bearer ')
+      ? authorization.slice(7)
+      : null;
+    if (!refreshToken) throw new UnauthorizedException('Refresh token ausente');
+    return this.refresh.execute(refreshToken, res);
   }
 
   @Post('logout')

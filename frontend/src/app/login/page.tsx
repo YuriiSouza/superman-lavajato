@@ -1,8 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+
+const HOME_BY_ROLE: Record<string, string> = {
+  ADMIN: '/admin/dashboard',
+  CAIXA: '/admin/financeiro',
+  OPERADOR: '/admin/ordens',
+};
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -26,7 +32,9 @@ export default function LoginPage() {
       setError('Email ou senha inválidos.');
       setLoading(false);
     } else {
-      router.push('/admin/dashboard');
+      const session = await getSession();
+      const role = (session?.user as any)?.role ?? 'OPERADOR';
+      router.push(HOME_BY_ROLE[role] ?? '/admin/clientes');
     }
   }
 

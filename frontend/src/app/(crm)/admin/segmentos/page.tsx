@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Crown, RefreshCw, Clock, Car, Repeat } from 'lucide-react';
 import { crm } from '@/lib/crm/api';
+import OSActionsWidget from '@/components/crm/OSActionsWidget';
 
 const SEGMENTS = [
   { key: 'vip', icon: Crown, color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800' },
@@ -44,16 +45,19 @@ export default function SegmentosPage() {
   }
 
   return (
-    <div className="p-6 space-y-5">
-      <div className="flex items-center justify-between">
+    <div className="p-4 md:p-6 space-y-5 overflow-x-hidden">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Segmentação de clientes</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Clique em um segmento para ver os clientes</p>
         </div>
-        <button onClick={load}
-          className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-lg">
-          <RefreshCw size={13} /> Atualizar
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={load}
+            className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 border border-gray-300 dark:border-gray-600 px-3 py-1.5 rounded-lg">
+            <RefreshCw size={13} /> Atualizar
+          </button>
+          <OSActionsWidget />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

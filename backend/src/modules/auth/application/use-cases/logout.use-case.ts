@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { RedisService } from '../../../../infrastructure/redis/redis.service';
+import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
 
 @Injectable()
 export class LogoutUseCase {
-  constructor(private readonly redis: RedisService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async execute(userId: string, res: any): Promise<void> {
-    await this.redis.del(`refresh:${userId}`);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { hashedRefreshToken: null },
+    });
     res.clearCookie('access_token');
     res.clearCookie('refresh_token');
   }

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './infrastructure/prisma/prisma.module';
-import { RedisModule } from './infrastructure/redis/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ClientsModule } from './modules/clients/clients.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
@@ -11,12 +10,14 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { FinancialModule } from './modules/financial/financial.module';
 import { SegmentsModule } from './modules/segments/segments.module';
 import { ReactivationModule } from './modules/reactivation/reactivation.module';
+import { SettingsModule } from './modules/settings/settings.module';
+import { CashModule } from './modules/cash/cash.module';
+import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
-    RedisModule,
     AuthModule,
     ClientsModule,
     VehiclesModule,
@@ -26,6 +27,9 @@ import { ReactivationModule } from './modules/reactivation/reactivation.module';
     FinancialModule,
     SegmentsModule,
     ReactivationModule,
+    SettingsModule,
+    CashModule,
+    UsersModule,
   ],
 })
 export class AppModule {}

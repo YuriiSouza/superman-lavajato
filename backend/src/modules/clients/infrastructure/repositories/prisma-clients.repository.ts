@@ -10,7 +10,13 @@ export class PrismaClientsRepository {
   findAll(search?: string) {
     return this.prisma.client.findMany({
       where: search
-        ? { OR: [{ name: { contains: search, mode: 'insensitive' } }, { phone: { contains: search } }] }
+        ? {
+            OR: [
+              { name: { contains: search, mode: 'insensitive' } },
+              { phone: { contains: search } },
+              { vehicles: { some: { plate: { contains: search, mode: 'insensitive' } } } },
+            ],
+          }
         : undefined,
       include: { vehicles: true, _count: { select: { orders: true } } },
       orderBy: { name: 'asc' },
@@ -41,7 +47,7 @@ export class PrismaClientsRepository {
 
   findLastOrderDate(clientId: string) {
     return this.prisma.serviceOrder.findFirst({
-      where: { clientId, status: 'CONCLUIDO' },
+      where: { clientId, status: { in: ['CONCLUIDO', 'PAGO'] } },
       orderBy: { createdAt: 'desc' },
       select: { createdAt: true },
     });

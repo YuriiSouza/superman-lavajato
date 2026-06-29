@@ -2,7 +2,6 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
-import { RedisService } from '../../../../infrastructure/redis/redis.service';
 import { BcryptService } from '../../infrastructure/services/bcrypt.service';
 import { LoginDto } from '../dtos/login.dto';
 import { AuthResponseDto } from '../dtos/auth-response.dto';
@@ -13,7 +12,6 @@ export class LoginUseCase {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly config: ConfigService,
-    private readonly redis: RedisService,
     private readonly bcrypt: BcryptService,
   ) {}
 
@@ -24,7 +22,7 @@ export class LoginUseCase {
     const valid = await this.bcrypt.compare(dto.password, user.password);
     if (!valid) throw new UnauthorizedException('Credenciais inválidas');
 
-    const payload = { sub: user.id, email: user.email, name: user.name };
+    const payload = { sub: user.id, email: user.email, name: user.name, role: user.role };
 
     const accessToken = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_ACCESS_SECRET'),
@@ -36,12 +34,16 @@ export class LoginUseCase {
       expiresIn: this.config.get('JWT_REFRESH_EXPIRATION', '7d'),
     });
 
-    // Armazena no Redis para poder invalidar o refresh token no logout sem precisar de blocklist JWT
-    await this.redis.set(`refresh:${user.id}`, refreshToken, 7 * 24 * 60 * 60);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { hashedRefreshToken: refreshToken },
+    });
 
-    res.cookie('access_token', accessToken, { httpOnly: true, sameSite: 'strict' });
-    res.cookie('refresh_token', refreshToken, { httpOnly: true, sameSite: 'strict' });
+    const secure = process.env.NODE_ENV === 'production';
+    const sameSite = secure ? 'none' : 'strict';
+    res.cookie('access_token', accessToken, { httpOnly: true, secure, sameSite });
+    res.cookie('refresh_token', refreshToken, { httpOnly: true, secure, sameSite });
 
-    return { accessToken, user: { id: user.id, email: user.email, name: user.name } };
+    return { accessToken, refreshToken, user: { id: user.id, email: user.email, name: user.name, role: user.role } };
   }
 }

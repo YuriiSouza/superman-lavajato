@@ -3,8 +3,15 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CAIXA
+  OPERADOR
 }
 
 model User {
@@ -12,6 +19,7 @@ model User {
   email              String   @unique
   password           String
   name               String
+  role               UserRole @default(OPERADOR)
   hashedRefreshToken String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
@@ -26,8 +34,9 @@ model Client {
   notes     String?
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
-  vehicles  Vehicle[]
-  orders    ServiceOrder[]
+  vehicles         Vehicle[]
+  orders           ServiceOrder[]
+  reactivationLogs ReactivationLog[]
 
   @@map("clients")
 }
@@ -66,25 +75,38 @@ model Service {
 }
 
 model ServiceOrder {
-  id            String        @id @default(uuid())
+  id            String         @id @default(uuid())
   clientId      String
   vehicleId     String
   serviceId     String
   addons        Json?
-  totalValue    Decimal       @db.Decimal(10, 2)
-  paymentMethod PaymentMethod
-  status        OrderStatus   @default(PENDENTE)
+  totalValue    Decimal        @db.Decimal(10, 2)
+  paymentMethod PaymentMethod?
+  status        OrderStatus    @default(PENDENTE)
   notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  client        Client        @relation(fields: [clientId], references: [id])
-  vehicle       Vehicle       @relation(fields: [vehicleId], references: [id])
-  service       Service       @relation(fields: [serviceId], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  client        Client         @relation(fields: [clientId], references: [id])
+  vehicle       Vehicle        @relation(fields: [vehicleId], references: [id])
+  service       Service        @relation(fields: [serviceId], references: [id])
+  payments      OrderPayment[]
 
   @@index([clientId])
   @@index([createdAt])
   @@index([status])
   @@map("service_orders")
+}
+
+model OrderPayment {
+  id             String        @id @default(uuid())
+  serviceOrderId String
+  serviceOrder   ServiceOrder  @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  method         PaymentMethod
+  amount         Decimal       @db.Decimal(10, 2)
+  createdAt      DateTime      @default(now())
+
+  @@index([serviceOrderId])
+  @@map("order_payments")
 }
 
 enum PaymentMethod {
@@ -98,5 +120,52 @@ enum OrderStatus {
   PENDENTE
   EM_ANDAMENTO
   CONCLUIDO
+  PAGO
   CANCELADO
+}
+
+model CashSession {
+  id             String        @id @default(uuid())
+  date           String        // "YYYY-MM-DD" — uma sessão por dia
+  openedAt       DateTime      @default(now())
+  closedAt       DateTime?
+  openingBalance Decimal       @default(0) @db.Decimal(10, 2)
+  physicalCount  Decimal?      @db.Decimal(10, 2)
+  operatorName   String
+  outflows       CashOutflow[]
+
+  @@unique([date])
+  @@map("cash_sessions")
+}
+
+model CashOutflow {
+  id        String      @id @default(uuid())
+  sessionId String
+  session   CashSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  amount    Decimal     @db.Decimal(10, 2)
+  reason    String
+  createdAt DateTime    @default(now())
+
+  @@map("cash_outflows")
+}
+
+model ReactivationLog {
+  id        String   @id @default(uuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  sentAt    DateTime @default(now())
+  daysSince Int?
+  message   String
+
+  @@index([clientId])
+  @@index([sentAt])
+  @@map("reactivation_logs")
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
 }

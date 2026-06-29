@@ -36,8 +36,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
-      <body className="font-sans antialiased">
+    <html lang="pt-BR" className={`${inter.variable} h-full`}>
+      <body className="font-sans antialiased h-full">
         <AuthSessionProvider>{children}</AuthSessionProvider>
       </body>
     </html>

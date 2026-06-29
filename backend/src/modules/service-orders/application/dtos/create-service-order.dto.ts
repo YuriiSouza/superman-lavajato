@@ -24,9 +24,10 @@ export class CreateServiceOrderDto {
   @Min(0)
   totalValue: number;
 
-  @ApiProperty({ enum: PaymentMethod })
+  @ApiPropertyOptional({ enum: PaymentMethod })
   @IsEnum(PaymentMethod)
-  paymentMethod: PaymentMethod;
+  @IsOptional()
+  paymentMethod?: PaymentMethod;
 
   @ApiPropertyOptional({ enum: OrderStatus, default: OrderStatus.PENDENTE })
   @IsEnum(OrderStatus)

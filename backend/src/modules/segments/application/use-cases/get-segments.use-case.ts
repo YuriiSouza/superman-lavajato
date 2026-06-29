@@ -13,7 +13,7 @@ export class GetSegmentsUseCase {
       include: {
         vehicles: { select: { type: true } },
         orders: {
-          where: { status: 'CONCLUIDO' },
+          where: { status: { in: ['CONCLUIDO', 'PAGO'] } },
           select: { totalValue: true, createdAt: true, serviceId: true },
           orderBy: { createdAt: 'desc' },
         },
