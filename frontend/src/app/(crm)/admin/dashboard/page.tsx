@@ -493,7 +493,7 @@ export default function DashboardPage() {
   const [loadingInit, setLoadingInit] = useState(true);
   const [loadingCharts, setLoadingCharts] = useState(false);
 
-  const pollRef = useRef<ReturnType<typeof setInterval>>();
+  const pollRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
   // Static data loaded once
   useEffect(() => {
