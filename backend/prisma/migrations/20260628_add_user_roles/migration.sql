@@ -1,3 +1,0 @@
-CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'CAIXA', 'OPERADOR');
-ALTER TABLE "users" ADD COLUMN "role" "UserRole" NOT NULL DEFAULT 'OPERADOR';
-UPDATE "users" SET "role" = 'ADMIN';
