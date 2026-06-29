@@ -13,8 +13,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     networks:
       - lavajato-network
 
@@ -53,24 +51,8 @@ services:
     networks:
       - lavajato-network
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - '6379:6379'
-    command: redis-server ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
-    volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 5s
-      timeout: 3s
-      retries: 5
-    networks:
-      - lavajato-network
-
 volumes:
   pgdata:
-  redis_data:
   backend_node_modules:
   frontend_node_modules:
   frontend_next:

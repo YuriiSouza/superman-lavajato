@@ -15,10 +15,17 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('resize', check);
   }, []);
 
-  // fecha o drawer ao mudar para desktop
   useEffect(() => {
     if (!isMobile) setDrawerOpen(false);
   }, [isMobile]);
+
+  // Mantém o backend (Render free tier) acordado enquanto o app está aberto
+  useEffect(() => {
+    const ping = () =>
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`, { method: 'GET' }).catch(() => {});
+    const id = setInterval(ping, 10 * 60 * 1000); // a cada 10 minutos
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">

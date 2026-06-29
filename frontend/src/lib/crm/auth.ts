@@ -3,11 +3,19 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import axios from 'axios';
 
 async function refreshAccessToken(token: any) {
+  // Sem refresh token armazenado (sessão antiga) → forçar novo login
+  if (!token.refreshToken) {
+    return { ...token, error: 'RefreshAccessTokenError' };
+  }
+
   try {
     const { data } = await axios.post(
       `${process.env.API_INTERNAL_URL}/auth/refresh`,
       {},
-      { headers: { Authorization: `Bearer ${token.refreshToken}` } },
+      {
+        headers: { Authorization: `Bearer ${token.refreshToken}` },
+        timeout: 8000, // 8s — dentro do limite de 10s do Vercel
+      },
     );
     return {
       ...token,
@@ -15,7 +23,17 @@ async function refreshAccessToken(token: any) {
       accessTokenExpires: Date.now() + 13 * 60 * 1000,
       error: undefined,
     };
-  } catch {
+  } catch (err: any) {
+    // Erro de rede / timeout (backend hibernando) → mantém sessão, tenta de novo na próxima request
+    const isAuthError = err?.response?.status === 401 || err?.response?.status === 403;
+    if (!isAuthError) {
+      return {
+        ...token,
+        // Estende o prazo por 2min para a próxima tentativa
+        accessTokenExpires: Date.now() + 2 * 60 * 1000,
+      };
+    }
+    // 401/403 real → refresh token inválido ou expirado → deslogar
     return { ...token, error: 'RefreshAccessTokenError' };
   }
 }

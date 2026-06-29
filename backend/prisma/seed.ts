@@ -14,32 +14,49 @@ function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function randomPlate(): string {
-  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const l = () => letters[Math.floor(Math.random() * letters.length)];
-  const d = () => Math.floor(Math.random() * 10);
-  return `${l()}${l()}${l()}${d()}${d()}${d()}${d()}`;
-}
-
 async function main() {
-  // ── usuário admin ─────────────────────────────────────────────────────────
-  const password = await bcrypt.hash('admin123', 10);
+  // ── usuários ──────────────────────────────────────────────────────────────
+  const hashAdmin = await bcrypt.hash('admin123', 10);
   await prisma.user.upsert({
     where: { email: 'admin@supermanlavajato.com.br' },
-    update: {},
-    create: { email: 'admin@supermanlavajato.com.br', password, name: 'Administrador' },
+    update: { role: 'ADMIN' },
+    create: { email: 'admin@supermanlavajato.com.br', password: hashAdmin, name: 'Administrador', role: 'ADMIN' },
   });
+
+  const hashCaixa = await bcrypt.hash('caixa123', 10);
+  await prisma.user.upsert({
+    where: { email: 'caixa@supermanlavajato.com.br' },
+    update: { role: 'CAIXA' },
+    create: { email: 'caixa@supermanlavajato.com.br', password: hashCaixa, name: 'Operador de Caixa', role: 'CAIXA' },
+  });
+
+  const hashOp = await bcrypt.hash('operador123', 10);
+  await prisma.user.upsert({
+    where: { email: 'operador@supermanlavajato.com.br' },
+    update: { role: 'OPERADOR' },
+    create: { email: 'operador@supermanlavajato.com.br', password: hashOp, name: 'Lavador', role: 'OPERADOR' },
+  });
+
+  // ── configurações padrão ──────────────────────────────────────────────────
+  const defaultSettings: { key: string; value: string }[] = [
+    { key: 'lavajato_name',      value: 'Superman Lava-Jato' },
+    { key: 'lavajato_phone',     value: '(11) 99999-0000' },
+    { key: 'reactivation_days',  value: '30' },
+    { key: 'whatsapp_template',  value: 'Olá {nome}, sentimos sua falta! Faz {dias} dias desde a última visita. Venha dar uma lavada no seu {veiculo} 🚗✨' },
+  ];
+  for (const s of defaultSettings) {
+    await prisma.setting.upsert({ where: { key: s.key }, update: {}, create: s });
+  }
 
   // ── serviços ──────────────────────────────────────────────────────────────
   const serviceDefs = [
-    { name: 'Lavagem Simples',      price: 40,  duration: 30  },
-    { name: 'Lavagem Completa',     price: 80,  duration: 60  },
-    { name: 'Enceramento Premium',  price: 140, duration: 90  },
-    { name: 'Detalhamento Herói',   price: 280, duration: 180 },
-    { name: 'Lavagem de Motor',     price: 120, duration: 60  },
+    { name: 'Lavagem Simples',     price: 40,  duration: 30  },
+    { name: 'Lavagem Completa',    price: 80,  duration: 60  },
+    { name: 'Enceramento Premium', price: 140, duration: 90  },
+    { name: 'Detalhamento Herói',  price: 280, duration: 180 },
+    { name: 'Lavagem de Motor',    price: 120, duration: 60  },
   ];
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const serviceRecords: any[] = [];
   for (const s of serviceDefs) {
     const existing = await prisma.service.findFirst({ where: { name: s.name } });
@@ -89,65 +106,46 @@ async function main() {
   const colors = ['Preto', 'Branco', 'Prata', 'Cinza', 'Vermelho', 'Azul', 'Verde'];
   const payments: PaymentMethod[] = ['PIX', 'DINHEIRO', 'CARTAO_CREDITO', 'CARTAO_DEBITO'];
 
-  // Distribuição de últimas visitas para testar reativação:
-  // ~8 clientes ativos (últimos 10 dias)
-  // ~7 clientes borderline (15-29 dias)
-  // ~8 clientes inativos (31-60 dias) → aparecem na fila de 30d
-  // ~7 clientes sumidos (61-120 dias) → muito urgentes
+  // Distribuição de últimas visitas para testar reativação
   const lastVisitDaysAgo = [
-    2, 4, 6, 8, 9, 10, 10, 12,   // ativos
-    16, 18, 21, 24, 27, 28, 29,  // borderline
-    32, 35, 38, 42, 45, 50, 55, 58, // inativos
-    65, 70, 80, 90, 100, 110, 120, // sumidos
+    2, 4, 6, 8, 9, 10, 10, 12,           // ativos
+    16, 18, 21, 24, 27, 28, 29,          // borderline
+    32, 35, 38, 42, 45, 50, 55, 58,      // inativos (aparecem na fila 30d)
+    65, 70, 80, 90, 100, 110, 120,       // sumidos (muito urgentes)
   ];
 
-  // Remove dados de seed anteriores na ordem correta (FK constraints)
+  // Limpa seed anterior (OrderPayment é cascade de ServiceOrder)
   await prisma.serviceOrder.deleteMany({ where: { notes: { startsWith: '[seed]' } } });
   await prisma.client.deleteMany({ where: { phone: { startsWith: '(11) 99100-' } } });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clientRecords: any[] = [];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const vehicleRecords: any[][] = [];
 
   for (let i = 0; i < clientDefs.length; i++) {
-    const def = clientDefs[i];
-
-    // Deixa o Prisma gerar UUID válido
-    const client = await prisma.client.create({
-      data: { name: def.name, phone: def.phone },
-    });
+    const client = await prisma.client.create({ data: clientDefs[i] });
     clientRecords.push(client);
 
     const numVehicles = i < 10 ? 2 : 1;
     const clientVehicles: any[] = [];
-
     for (let v = 0; v < numVehicles; v++) {
       const plate = `TST${String(i + 1).padStart(2, '0')}${String(v + 1)}A${v}`;
       const vehicle = await prisma.vehicle.upsert({
         where: { plate },
         update: { clientId: client.id },
-        create: {
-          plate,
-          model: pick(vehicleModels),
-          color: pick(colors),
-          type: pick(vehicleTypes),
-          clientId: client.id,
-        },
+        create: { plate, model: pick(vehicleModels), color: pick(colors), type: pick(vehicleTypes), clientId: client.id },
       });
       clientVehicles.push(vehicle);
     }
     vehicleRecords.push(clientVehicles);
   }
 
-  // ── ordens de serviço ─────────────────────────────────────────────────────
-
+  // ── ordens de serviço + pagamentos ───────────────────────────────────────
   const statusWeights: { status: OrderStatus; weight: number }[] = [
-    { status: 'PAGO',        weight: 60 },
-    { status: 'CONCLUIDO',   weight: 20 },
-    { status: 'PENDENTE',    weight: 10 },
-    { status: 'EM_ANDAMENTO', weight: 7 },
-    { status: 'CANCELADO',   weight: 3 },
+    { status: 'PAGO',         weight: 60 },
+    { status: 'CONCLUIDO',    weight: 20 },
+    { status: 'PENDENTE',     weight: 10 },
+    { status: 'EM_ANDAMENTO', weight:  7 },
+    { status: 'CANCELADO',    weight:  3 },
   ];
 
   function pickStatus(): OrderStatus {
@@ -160,6 +158,45 @@ async function main() {
     return 'PAGO';
   }
 
+  async function createOrder(data: {
+    clientId: string;
+    vehicleId: string;
+    serviceId: string;
+    totalValue: number;
+    paymentMethod: PaymentMethod;
+    status: OrderStatus;
+    notes: string;
+    createdAt: Date;
+  }) {
+    const order = await prisma.serviceOrder.create({
+      data: {
+        clientId: data.clientId,
+        vehicleId: data.vehicleId,
+        serviceId: data.serviceId,
+        totalValue: data.totalValue,
+        paymentMethod: data.paymentMethod,
+        status: data.status,
+        notes: data.notes,
+        createdAt: data.createdAt,
+        updatedAt: data.createdAt,
+      },
+    });
+
+    // Cria registro de pagamento para ordens pagas
+    if (data.status === 'PAGO') {
+      await prisma.orderPayment.create({
+        data: {
+          serviceOrderId: order.id,
+          method: data.paymentMethod,
+          amount: data.totalValue,
+          createdAt: data.createdAt,
+        },
+      });
+    }
+
+    return order;
+  }
+
   let orderCount = 0;
 
   for (let i = 0; i < clientRecords.length; i++) {
@@ -170,74 +207,71 @@ async function main() {
     // OS mais recente: na data de "última visita" de cada cliente
     const mainVehicle = vehicles[0];
     const mainService = pick(serviceRecords);
-    await prisma.serviceOrder.create({
-      data: {
-        clientId: client.id,
-        vehicleId: mainVehicle.id,
-        serviceId: mainService.id,
-        totalValue: Number(mainService.price),
-        paymentMethod: pick(payments),
-        status: 'PAGO',
-        notes: '[seed] última visita',
-        createdAt: daysAgo(lastVisit),
-        updatedAt: daysAgo(lastVisit),
-      },
+    await createOrder({
+      clientId: client.id,
+      vehicleId: mainVehicle.id,
+      serviceId: mainService.id,
+      totalValue: Number(mainService.price),
+      paymentMethod: pick(payments),
+      status: 'PAGO',
+      notes: '[seed] última visita',
+      createdAt: daysAgo(lastVisit),
     });
     orderCount++;
 
-    // Histórico: 2-5 OS anteriores para clientes com mais visitas
-    const extraOrders = lastVisit < 30 ? Math.floor(Math.random() * 4) + 2 : Math.floor(Math.random() * 2) + 1;
+    // Histórico: 2-5 OS anteriores
+    const extraOrders = lastVisit < 30
+      ? Math.floor(Math.random() * 4) + 2
+      : Math.floor(Math.random() * 2) + 1;
+
     for (let o = 0; o < extraOrders; o++) {
       const offsetDays = lastVisit + 15 + Math.floor(Math.random() * 60);
-      const vehicle = pick(vehicles);
       const service = pick(serviceRecords);
-      await prisma.serviceOrder.create({
-        data: {
-          clientId: client.id,
-          vehicleId: vehicle.id,
-          serviceId: service.id,
-          totalValue: Number(service.price),
-          paymentMethod: pick(payments),
-          status: pickStatus(),
-          notes: `[seed] histórico ${o + 1}`,
-          createdAt: daysAgo(offsetDays),
-          updatedAt: daysAgo(offsetDays),
-        },
+      const status = pickStatus();
+      await createOrder({
+        clientId: client.id,
+        vehicleId: pick(vehicles).id,
+        serviceId: service.id,
+        totalValue: Number(service.price),
+        paymentMethod: pick(payments),
+        status,
+        notes: `[seed] histórico ${o + 1}`,
+        createdAt: daysAgo(offsetDays),
       });
       orderCount++;
     }
   }
 
-  // OS avulsas para preencher até ~100+ e variar os dias
+  // OS avulsas para chegar a ~100+
   const extraTargets = Math.max(0, 100 - orderCount);
   for (let o = 0; o < extraTargets; o++) {
     const ci = Math.floor(Math.random() * clientRecords.length);
     const client = clientRecords[ci];
-    const vehicles = vehicleRecords[ci];
-    const vehicle = pick(vehicles);
     const service = pick(serviceRecords);
-    const dayOffset = Math.floor(Math.random() * 120) + 1;
-    await prisma.serviceOrder.create({
-      data: {
-        clientId: client.id,
-        vehicleId: vehicle.id,
-        serviceId: service.id,
-        totalValue: Number(service.price),
-        paymentMethod: pick(payments),
-        status: pickStatus(),
-        notes: `[seed] avulsa ${o + 1}`,
-        createdAt: daysAgo(dayOffset),
-        updatedAt: daysAgo(dayOffset),
-      },
+    const status = pickStatus();
+    await createOrder({
+      clientId: client.id,
+      vehicleId: pick(vehicleRecords[ci]).id,
+      serviceId: service.id,
+      totalValue: Number(service.price),
+      paymentMethod: pick(payments),
+      status,
+      notes: `[seed] avulsa ${o + 1}`,
+      createdAt: daysAgo(Math.floor(Math.random() * 120) + 1),
     });
     orderCount++;
   }
 
-  console.log(`✅ Seed concluído:`);
+  console.log('✅ Seed concluído:');
   console.log(`   👥 ${clientRecords.length} clientes`);
   console.log(`   🚗 ${vehicleRecords.flat().length} veículos`);
-  console.log(`   📋 ${orderCount} ordens de serviço`);
+  console.log(`   📋 ${orderCount} ordens de serviço (com OrderPayment para as PAGO)`);
   console.log(`   🔔 ~15 clientes devem aparecer na fila de reativação (threshold 30d)`);
+  console.log('');
+  console.log('   Usuários criados:');
+  console.log('   📧 admin@supermanlavajato.com.br  → senha: admin123  (ADMIN)');
+  console.log('   📧 caixa@supermanlavajato.com.br  → senha: caixa123  (CAIXA)');
+  console.log('   📧 operador@supermanlavajato.com.br → senha: operador123 (OPERADOR)');
 }
 
 main()
