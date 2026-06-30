@@ -74,9 +74,9 @@ export const crm = {
   services: {
     list: () => api.get('/services?activeOnly=true').then((r) => r.data),
     listAll: () => api.get('/services').then((r) => r.data),
-    create: (data: { name: string; price: number; duration: number }) =>
+    create: (data: { name: string; description?: string; price: number; duration: number; features?: string[]; highlight?: boolean }) =>
       api.post('/services', data).then((r) => r.data),
-    update: (id: string, data: Partial<{ name: string; price: number; duration: number; active: boolean }>) =>
+    update: (id: string, data: Partial<{ name: string; description: string; price: number; duration: number; features: string[]; highlight: boolean; active: boolean }>) =>
       api.put(`/services/${id}`, data).then((r) => r.data),
     remove: (id: string) => api.delete(`/services/${id}`).then((r) => r.data),
   },
@@ -114,6 +114,15 @@ export const crm = {
   auth: {
     changePassword: (data: { currentPassword: string; newPassword: string }) =>
       api.patch('/auth/change-password', data).then((r) => r.data),
+  },
+
+  appointments: {
+    listByDate: (date: string) => api.get(`/appointments?date=${date}`).then((r) => r.data),
+    getSlots: (date: string, serviceId: string) =>
+      api.get(`/appointments/slots?date=${date}&serviceId=${serviceId}`).then((r) => r.data),
+    updateStatus: (id: string, status: string) =>
+      api.put(`/appointments/${id}`, { status }).then((r) => r.data),
+    remove: (id: string) => api.delete(`/appointments/${id}`).then((r) => r.data),
   },
 
   users: {

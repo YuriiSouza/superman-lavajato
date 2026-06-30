@@ -3,9 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Logo } from "./Logo";
-import { whatsappLink } from "@/lib/site";
-import { WhatsAppIcon } from "./icons";
-
 const NAV = [
   { label: "Início", href: "/#inicio" },
   { label: "Serviços", href: "/#servicos" },
@@ -38,11 +35,11 @@ export function Header() {
     <header
       className={`sticky top-0 z-40 transition-colors duration-300 ${
         scrolled
-          ? "border-b border-white/10 bg-ink-950/90 backdrop-blur-md"
-          : "border-b border-transparent bg-transparent"
+          ? "border-b border-white/10 bg-zinc-800/95 backdrop-blur-md"
+          : "border-b border-white/5 bg-zinc-800/80 backdrop-blur-sm"
       }`}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6 lg:h-20">
+      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 sm:px-6 lg:h-28">
         <Logo />
 
         <nav
@@ -60,17 +57,6 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden lg:block">
-          <a
-            href={whatsappLink()}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full bg-kawasaki-500 px-5 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:bg-kawasaki-400"
-          >
-            <WhatsAppIcon className="h-4 w-4" />
-            Agendar
-          </a>
-        </div>
 
         {/* Botão hambúrguer (mobile) */}
         <button
@@ -122,16 +108,6 @@ export function Header() {
               {item.label}
             </Link>
           ))}
-          <a
-            href={whatsappLink()}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => setOpen(false)}
-            className="mt-2 inline-flex items-center justify-center gap-2 rounded-full bg-kawasaki-500 px-5 py-3 text-base font-semibold text-ink-950"
-          >
-            <WhatsAppIcon className="h-5 w-5" />
-            Agendar pelo WhatsApp
-          </a>
         </nav>
       </div>
     </header>

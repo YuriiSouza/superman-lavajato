@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { whatsappLink } from "@/lib/site";
+import { fetchSiteSettings, whatsappLink } from "@/lib/site";
 import { ArrowRightIcon, WhatsAppIcon, StarIcon, BoltIcon } from "./icons";
 
-export function Hero() {
+export async function Hero() {
+  const site = await fetchSiteSettings();
+
   return (
     <section id="inicio" className="relative isolate overflow-hidden">
       {/* Imagem de fundo (carro sendo lavado) */}
       <div className="absolute inset-0 -z-10">
         <img
-          src="https://images.unsplash.com/photo-1605164599901-db7f68c4b1a8?auto=format&fit=crop&w=2000&q=80"
+          src="/fotos/hero.png"
           alt="Carro recebendo lavagem profissional no Superman Lava a Jato"
           className="h-full w-full object-cover"
           loading="eager"
@@ -36,28 +38,28 @@ export function Hero() {
         </h1>
 
         <p className="mt-6 max-w-xl text-lg leading-relaxed text-zinc-300">
-          No Superman Lava a Jato unimos força, rapidez e um acabamento de
+          No {site.name} unimos força, rapidez e um acabamento de
           showroom. Lavagem simples, completa, enceramento e detalhamento — tudo
           com qualidade premium.
         </p>
 
         <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-          <a
-            href={whatsappLink()}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/agendar"
             className="inline-flex items-center justify-center gap-2 rounded-full bg-kawasaki-500 px-7 py-3.5 text-base font-semibold text-ink-950 shadow-lg shadow-kawasaki-500/20 transition-all hover:bg-kawasaki-400 hover:shadow-kawasaki-500/40"
           >
-            <WhatsAppIcon className="h-5 w-5" />
-            Agende sua lavagem
-          </a>
-          <Link
-            href="/servicos"
+            <ArrowRightIcon className="h-5 w-5" />
+            Agendar online
+          </Link>
+          <a
+            href={whatsappLink(site.phone)}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-7 py-3.5 text-base font-semibold text-white backdrop-blur transition-colors hover:border-kawasaki-500 hover:text-kawasaki-400"
           >
-            Conheça nossos serviços
-            <ArrowRightIcon className="h-5 w-5" />
-          </Link>
+            <WhatsAppIcon className="h-5 w-5" />
+            Fale conosco
+          </a>
         </div>
 
         {/* Selos de confiança */}
@@ -73,11 +75,11 @@ export function Hero() {
           </div>
           <div className="h-4 w-px bg-white/15" />
           <span>
-            <span className="font-semibold text-white">+5.000</span> carros
+            <span className="font-semibold text-white">+1.000</span> carros
             lavados
           </span>
           <div className="hidden h-4 w-px bg-white/15 sm:block" />
-          <span>Atendimento em até 30 minutos</span>
+          <span>Atendimento rápido e eficiente</span>
         </div>
       </div>
     </section>

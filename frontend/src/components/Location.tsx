@@ -1,8 +1,10 @@
 import { SectionHeading } from "./SectionHeading";
-import { SITE } from "@/lib/site";
+import { fetchSiteSettings } from "@/lib/site";
 import { PinIcon, ClockIcon, PhoneIcon, ArrowRightIcon } from "./icons";
 
-export function Location() {
+export async function Location() {
+  const site = await fetchSiteSettings();
+
   return (
     <section
       id="localizacao"
@@ -19,8 +21,8 @@ export function Location() {
           <div className="lg:col-span-3">
             <div className="overflow-hidden rounded-2xl border border-white/10">
               <iframe
-                title="Mapa da localização do Superman Lava a Jato"
-                src={SITE.mapsEmbed}
+                title={`Mapa da localização do ${site.name}`}
+                src={site.mapsEmbed}
                 className="h-[300px] w-full sm:h-[420px]"
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
@@ -37,7 +39,7 @@ export function Location() {
                 </span>
                 <div>
                   <h3 className="font-semibold text-white">Endereço</h3>
-                  <p className="mt-1 text-sm text-zinc-400">{SITE.address}</p>
+                  <p className="mt-1 text-sm text-zinc-400">{site.address}</p>
                 </div>
               </div>
 
@@ -50,7 +52,7 @@ export function Location() {
                     Horário de funcionamento
                   </h3>
                   <ul className="mt-2 space-y-1 text-sm text-zinc-400">
-                    {SITE.hours.map((h) => (
+                    {site.hours.map((h) => (
                       <li key={h.day} className="flex justify-between gap-4">
                         <span>{h.day}</span>
                         <span className="font-medium text-zinc-300">
@@ -69,16 +71,16 @@ export function Location() {
                 <div>
                   <h3 className="font-semibold text-white">Telefone</h3>
                   <a
-                    href={`tel:${SITE.phoneDisplay.replace(/\D/g, "")}`}
+                    href={`tel:${site.phone}`}
                     className="mt-1 block text-sm text-zinc-400 hover:text-kawasaki-400"
                   >
-                    {SITE.phoneDisplay}
+                    {site.phoneDisplay}
                   </a>
                 </div>
               </div>
 
               <a
-                href={SITE.mapsDirections}
+                href={site.mapsDirections}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-kawasaki-500 px-6 py-3 text-base font-semibold text-ink-950 transition-colors hover:bg-kawasaki-400"

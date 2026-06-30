@@ -13,6 +13,7 @@ import { ReactivationModule } from './modules/reactivation/reactivation.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { CashModule } from './modules/cash/cash.module';
 import { UsersModule } from './modules/users/users.module';
+import { AppointmentsModule } from './modules/appointments/appointments.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UsersModule } from './modules/users/users.module';
     SettingsModule,
     CashModule,
     UsersModule,
+    AppointmentsModule,
   ],
 })
 export class AppModule {}

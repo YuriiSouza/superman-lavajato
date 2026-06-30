@@ -1,11 +1,10 @@
-import { whatsappLink } from "@/lib/site";
 import { WhatsAppIcon } from "./icons";
 
 /** Botão flutuante fixo de WhatsApp — visível em todas as páginas. */
-export function WhatsAppButton() {
+export function WhatsAppButton({ href }: { href: string }) {
   return (
     <a
-      href={whatsappLink()}
+      href={href}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Agendar pelo WhatsApp"

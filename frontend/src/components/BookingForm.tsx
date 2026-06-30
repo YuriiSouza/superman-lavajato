@@ -1,8 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { WHATSAPP_NUMBER } from "@/lib/site";
-import { SERVICES } from "@/lib/services";
+import type { Service } from "@/lib/services";
 import { WhatsAppIcon } from "./icons";
 
 const inputClass =
@@ -11,10 +10,20 @@ const inputClass =
 const labelClass =
   "mb-1.5 block text-sm font-medium text-zinc-300";
 
-export function BookingForm() {
+function formatPrice(price: string | number): string {
+  return `R$ ${Number(price).toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`;
+}
+
+interface Props {
+  services: Service[];
+  whatsappPhone: string;
+}
+
+export function BookingForm({ services, whatsappPhone }: Props) {
+  const defaultService = services.find((s) => s.highlight)?.name ?? services[0]?.name ?? "";
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [service, setService] = useState(SERVICES[1].name);
+  const [service, setService] = useState(defaultService);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [notes, setNotes] = useState("");
@@ -33,7 +42,7 @@ export function BookingForm() {
       notes ? `*Observações:* ${notes}` : null,
     ].filter(Boolean);
 
-    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+    const url = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(
       lines.join("\n"),
     )}`;
     window.open(url, "_blank", "noopener,noreferrer");
@@ -85,9 +94,9 @@ export function BookingForm() {
             onChange={(e) => setService(e.target.value)}
             className={inputClass}
           >
-            {SERVICES.map((s) => (
-              <option key={s.slug} value={s.name}>
-                {s.name} — {s.price}
+            {services.map((s) => (
+              <option key={s.id} value={s.name}>
+                {s.name} — {formatPrice(s.price)}
               </option>
             ))}
           </select>

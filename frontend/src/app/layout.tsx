@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { SITE } from "@/lib/site";
+import { fetchSiteSettings } from "@/lib/site";
 import AuthSessionProvider from "@/components/crm/SessionProvider";
 
 const inter = Inter({
@@ -10,23 +10,26 @@ const inter = Inter({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL("https://supermanlavajato.com.br"),
-  title: {
-    default: `${SITE.name} — ${SITE.tagline}`,
-    template: `%s | ${SITE.name}`,
-  },
-  description: SITE.description,
-  keywords: ["lava a jato", "lavagem de carro", "enceramento", "detalhamento automotivo", "Superman Lava a Jato"],
-  openGraph: {
-    title: `${SITE.name} — ${SITE.tagline}`,
-    description: SITE.description,
-    type: "website",
-    locale: "pt_BR",
-    siteName: SITE.name,
-  },
-  twitter: { card: "summary_large_image", title: SITE.name, description: SITE.description },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const site = await fetchSiteSettings();
+  return {
+    metadataBase: new URL("https://supermanlavajato.com.br"),
+    title: {
+      default: `${site.name} — ${site.tagline}`,
+      template: `%s | ${site.name}`,
+    },
+    description: site.description,
+    keywords: ["lava a jato", "lavagem de carro", "enceramento", "detalhamento automotivo", site.name],
+    openGraph: {
+      title: `${site.name} — ${site.tagline}`,
+      description: site.description,
+      type: "website",
+      locale: "pt_BR",
+      siteName: site.name,
+    },
+    twitter: { card: "summary_large_image", title: site.name, description: site.description },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#0a0a0b",

@@ -24,17 +24,35 @@ export function About() {
     <section id="sobre" className="scroll-mt-24 border-y border-white/10 bg-ink-900 py-20 sm:py-28">
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
         <div className="relative">
-          <div className="overflow-hidden rounded-3xl border border-white/10">
-            <img
-              src="https://images.unsplash.com/photo-1607860108855-64acf2078ed9?auto=format&fit=crop&w=1200&q=80"
-              alt="Equipe do Superman Lava a Jato finalizando a lavagem de um carro"
-              className="h-full w-full object-cover"
-              loading="lazy"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2 overflow-hidden rounded-2xl border border-white/10">
+              <img
+                src="/fotos/estrutura-1.png"
+                alt="Estrutura do Superman Lava a Jato em Anápolis"
+                className="h-56 w-full object-cover sm:h-72"
+                loading="lazy"
+              />
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-white/10">
+              <img
+                src="/fotos/estrutura-2.png"
+                alt="Área de atendimento coberta"
+                className="h-40 w-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-white/10">
+              <img
+                src="/fotos/carro-detalhado.jpeg"
+                alt="Carro finalizado no Superman Lava a Jato"
+                className="h-40 w-full object-cover"
+                loading="lazy"
+              />
+            </div>
           </div>
           <div className="absolute -bottom-6 -right-4 hidden rounded-2xl border border-kawasaki-500/30 bg-ink-950 px-6 py-5 shadow-xl sm:block">
-            <p className="text-3xl font-extrabold text-kawasaki-500">+10 anos</p>
-            <p className="text-sm text-zinc-400">deixando carros como novos</p>
+            <p className="text-3xl font-extrabold text-kawasaki-500">Premium</p>
+            <p className="text-sm text-zinc-400">detalhamento automotivo</p>
           </div>
         </div>
 

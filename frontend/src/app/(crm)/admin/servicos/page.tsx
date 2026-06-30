@@ -7,13 +7,13 @@ import { crm } from '@/lib/crm/api';
 const inputCls =
   'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500';
 
-const EMPTY = { name: '', price: '', duration: '' };
+const EMPTY = { name: '', description: '', price: '', duration: '', features: '', highlight: false };
 
 function Modal({ open, onClose, title, children }: any) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-sm">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-gray-700">
           <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
           <button onClick={onClose}><X size={16} className="text-gray-400" /></button>
@@ -35,7 +35,6 @@ export default function ServicosPage() {
 
   const load = () => {
     setLoading(true);
-    // busca todos (sem filtro de active) para mostrar inativos também
     crm.services.listAll().then(setServices).finally(() => setLoading(false));
   };
 
@@ -49,7 +48,14 @@ export default function ServicosPage() {
 
   function openEdit(s: any) {
     setEditing(s);
-    setForm({ name: s.name, price: String(s.price), duration: String(s.duration) });
+    setForm({
+      name: s.name,
+      description: s.description ?? '',
+      price: String(s.price),
+      duration: String(s.duration),
+      features: Array.isArray(s.features) ? s.features.join('\n') : '',
+      highlight: s.highlight ?? false,
+    });
     setModal(true);
   }
 
@@ -57,10 +63,17 @@ export default function ServicosPage() {
     if (!form.name.trim() || !form.price || !form.duration) return;
     setSaving(true);
     try {
+      const features = form.features
+        .split('\n')
+        .map((f: string) => f.trim())
+        .filter(Boolean);
       const data = {
         name: form.name.trim(),
+        description: form.description.trim() || undefined,
         price: parseFloat(form.price.replace(',', '.')),
         duration: parseInt(form.duration),
+        features,
+        highlight: form.highlight,
       };
       if (editing) {
         await crm.services.update(editing.id, data);
@@ -137,6 +150,11 @@ export default function ServicosPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{s.name}</p>
+                  {s.highlight && (
+                    <span className="text-xs px-1.5 py-0.5 rounded bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">
+                      Destaque
+                    </span>
+                  )}
                   {!s.active && (
                     <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">
                       Inativo
@@ -145,6 +163,7 @@ export default function ServicosPage() {
                 </div>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
                   {s.duration} min
+                  {s.description && ` · ${s.description}`}
                 </p>
               </div>
 
@@ -196,6 +215,19 @@ export default function ServicosPage() {
               autoFocus
             />
           </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Descrição curta
+            </label>
+            <input
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              placeholder="Ex: Interna e externa para um carro impecável."
+              className={inputCls}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -222,6 +254,32 @@ export default function ServicosPage() {
               />
             </div>
           </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              O que está incluso (um item por linha)
+            </label>
+            <textarea
+              value={form.features}
+              onChange={(e) => setForm({ ...form, features: e.target.value })}
+              placeholder={"Lavagem externa completa\nAspiração interna\nLimpeza de vidros"}
+              rows={4}
+              className={inputCls}
+            />
+          </div>
+
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={form.highlight}
+              onChange={(e) => setForm({ ...form, highlight: e.target.checked })}
+              className="rounded border-gray-300 text-blue-600"
+            />
+            <span className="text-xs text-gray-700 dark:text-gray-300">
+              Destacar como "Mais escolhido" na landing page
+            </span>
+          </label>
+
           <div className="flex gap-2 pt-1">
             <button
               onClick={() => setModal(false)}

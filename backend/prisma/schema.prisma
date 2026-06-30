@@ -5,7 +5,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 enum UserRole {
@@ -64,12 +64,16 @@ enum VehicleType {
 }
 
 model Service {
-  id       String         @id @default(uuid())
-  name     String
-  price    Decimal        @db.Decimal(10, 2)
-  duration Int
-  active   Boolean        @default(true)
-  orders   ServiceOrder[]
+  id          String         @id @default(uuid())
+  name        String
+  description String?
+  price       Decimal        @db.Decimal(10, 2)
+  duration    Int
+  features    Json           @default("[]")
+  highlight   Boolean        @default(false)
+  active        Boolean         @default(true)
+  orders        ServiceOrder[]
+  appointments  Appointment[]
 
   @@map("services")
 }
@@ -160,6 +164,33 @@ model ReactivationLog {
   @@index([clientId])
   @@index([sentAt])
   @@map("reactivation_logs")
+}
+
+enum AppointmentStatus {
+  PENDENTE
+  CONFIRMADO
+  CANCELADO
+  CONCLUIDO
+}
+
+model Appointment {
+  id          String            @id @default(uuid())
+  clientName  String
+  clientPhone String
+  vehicle     String
+  serviceId   String
+  service     Service           @relation(fields: [serviceId], references: [id])
+  date        String            // "YYYY-MM-DD"
+  startTime   String            // "HH:MM"
+  endTime     String            // "HH:MM"
+  status      AppointmentStatus @default(PENDENTE)
+  notes       String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([date])
+  @@index([status])
+  @@map("appointments")
 }
 
 model Setting {

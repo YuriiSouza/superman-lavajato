@@ -8,7 +8,7 @@ import { useState } from 'react';
 import {
   LayoutDashboard, Users, ClipboardList, MessageCircle,
   UsersRound, DollarSign, Settings, LogOut, Sun, Moon,
-  Wrench, UserCog, ChevronLeft, ChevronRight, X,
+  Wrench, UserCog, ChevronLeft, ChevronRight, X, CalendarDays,
 } from 'lucide-react';
 
 type Role = 'ADMIN' | 'CAIXA' | 'OPERADOR';
@@ -18,6 +18,7 @@ const nav = [
     { href: '/admin/dashboard',   icon: LayoutDashboard, label: 'Dashboard',         roles: ['ADMIN'] as Role[] },
     { href: '/admin/clientes',    icon: Users,           label: 'Clientes',           roles: ['ADMIN', 'CAIXA', 'OPERADOR'] as Role[] },
     { href: '/admin/ordens',      icon: ClipboardList,   label: 'Ordens de serviço',  roles: ['ADMIN', 'CAIXA', 'OPERADOR'] as Role[] },
+    { href: '/admin/agenda',      icon: CalendarDays,    label: 'Agenda',              roles: ['ADMIN', 'CAIXA', 'OPERADOR'] as Role[] },
   ]},
   { label: 'Retenção', items: [
     { href: '/admin/reativacao',  icon: MessageCircle,   label: 'Reativação',         roles: ['ADMIN'] as Role[] },

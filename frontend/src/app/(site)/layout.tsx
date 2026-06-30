@@ -1,8 +1,12 @@
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
+import { fetchSiteSettings, whatsappLink } from "@/lib/site";
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const site = await fetchSiteSettings();
+  const waUrl = whatsappLink(site.phone);
+
   return (
     <>
       <a
@@ -11,10 +15,10 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
       >
         Pular para o conteúdo
       </a>
-      <Header />
+      <Header whatsappUrl={waUrl} />
       <main id="conteudo">{children}</main>
-      <Footer />
-      <WhatsAppButton />
+      <Footer site={site} />
+      <WhatsAppButton href={waUrl} />
     </>
   );
 }
