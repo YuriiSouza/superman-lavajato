@@ -1,4 +1,6 @@
 import { getServerSession } from 'next-auth';
+
+export const dynamic = 'force-dynamic';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/crm/auth';
 import { ThemeProvider } from '@/components/crm/ThemeProvider';

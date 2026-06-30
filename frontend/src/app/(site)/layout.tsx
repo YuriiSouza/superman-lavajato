@@ -3,6 +3,8 @@ import { Footer } from "@/components/Footer";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { fetchSiteSettings, whatsappLink } from "@/lib/site";
 
+export const dynamic = 'force-dynamic';
+
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const site = await fetchSiteSettings();
   const waUrl = whatsappLink(site.phone);
