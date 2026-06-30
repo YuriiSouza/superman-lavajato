@@ -15,7 +15,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       >
         Pular para o conteúdo
       </a>
-      <Header whatsappUrl={waUrl} />
+      <Header />
       <main id="conteudo">{children}</main>
       <Footer site={site} />
       <WhatsAppButton href={waUrl} />
