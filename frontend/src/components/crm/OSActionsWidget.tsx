@@ -1,7 +1,13 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Plus, ClipboardList, X } from 'lucide-react';
+import { Plus, ClipboardList, X, MessageCircle } from 'lucide-react';
+
+function waLink(phone: string) {
+  const digits = phone.replace(/\D/g, '');
+  const number = digits.startsWith('55') ? digits : `55${digits}`;
+  return `https://wa.me/${number}`;
+}
 import { crm } from '@/lib/crm/api';
 import NovaOSModal from './NovaOSModal';
 import ReceberPagamentoModal from './ReceberPagamentoModal';
@@ -117,11 +123,28 @@ export default function OSActionsWidget({ onSuccess }: { onSuccess?: () => void 
                         {STATUS_LABEL[o.status]}
                       </span>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-gray-900 dark:text-gray-100 truncate">
-                          <span className="font-mono text-xs text-gray-400 dark:text-gray-500 mr-1.5">{o.vehicle?.plate}</span>
-                          {o.client?.name}
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm text-gray-900 dark:text-gray-100 truncate">
+                            {o.client?.name}
+                          </p>
+                          {o.client?.phone && (
+                            <a
+                              href={waLink(o.client.phone)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="shrink-0 text-green-500 hover:text-green-600"
+                              title="Abrir WhatsApp"
+                            >
+                              <MessageCircle size={14} />
+                            </a>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                          <span className="font-mono">{o.vehicle?.plate}</span>
+                          {o.vehicle?.model && <span className="ml-1">· {o.vehicle.model}</span>}
+                          <span className="ml-1">· {o.service?.name}</span>
                         </p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500">{o.service?.name}</p>
                       </div>
                       <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 shrink-0">
                         {fmt(Number(o.totalValue))}

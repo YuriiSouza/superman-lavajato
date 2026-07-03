@@ -46,6 +46,19 @@ export const crm = {
       api.get('/financial/revenue-by-service-by-day', { params }).then((r) => r.data),
     heatmap: (days = 90) =>
       api.get('/financial/heatmap', { params: { days } }).then((r) => r.data),
+    byVehicleType: (days = 90) =>
+      api.get('/financial/by-vehicle-type', { params: { days } }).then((r) => r.data),
+    profit: (params?: { period?: string; start?: string; end?: string }) =>
+      api.get('/financial/profit', { params }).then((r) => r.data),
+    dre: (months = 6) =>
+      api.get('/financial/dre', { params: { months } }).then((r) => r.data),
+    reserves: {
+      list: () => api.get('/financial/reserves').then((r) => r.data),
+      summary: () => api.get('/financial/reserves/summary').then((r) => r.data),
+      create: (data: { billId: string; amount: number; description?: string }) =>
+        api.post('/financial/reserves', data).then((r) => r.data),
+      remove: (id: string) => api.delete(`/financial/reserves/${id}`).then((r) => r.data),
+    },
   },
 
   segments: () => api.get('/segments').then((r) => r.data),
@@ -74,18 +87,27 @@ export const crm = {
   services: {
     list: () => api.get('/services?activeOnly=true').then((r) => r.data),
     listAll: () => api.get('/services').then((r) => r.data),
-    create: (data: { name: string; description?: string; price: number; duration: number; features?: string[]; highlight?: boolean }) =>
+    create: (data: { name: string; description?: string; price: number; duration: number; features?: string[]; highlight?: boolean; categoryId?: string }) =>
       api.post('/services', data).then((r) => r.data),
-    update: (id: string, data: Partial<{ name: string; description: string; price: number; duration: number; features: string[]; highlight: boolean; active: boolean }>) =>
+    update: (id: string, data: Partial<{ name: string; description: string; price: number; duration: number; features: string[]; highlight: boolean; active: boolean; categoryId: string | null }>) =>
       api.put(`/services/${id}`, data).then((r) => r.data),
     remove: (id: string) => api.delete(`/services/${id}`).then((r) => r.data),
+    categories: {
+      list: () => api.get('/services/categories').then((r) => r.data),
+      create: (data: { name: string; requiresVehicle?: boolean }) =>
+        api.post('/services/categories', data).then((r) => r.data),
+      update: (id: string, data: { name?: string; requiresVehicle?: boolean; active?: boolean }) =>
+        api.put(`/services/categories/${id}`, data).then((r) => r.data),
+      remove: (id: string) => api.delete(`/services/categories/${id}`).then((r) => r.data),
+    },
   },
 
   orders: {
     list: (params?: { status?: string; date?: string; serviceId?: string }) =>
       api.get('/service-orders', { params }).then((r) => r.data),
     today: () => api.get('/service-orders/today').then((r) => r.data),
-    create: (data: any) => api.post('/service-orders', data).then((r) => r.data),
+    create: (data: { serviceId: string; clientId?: string; vehicleId?: string; customerDescription?: string; scheduledAt?: string; totalValue: number; notes?: string }) =>
+      api.post('/service-orders', data).then((r) => r.data),
     update: (id: string, data: any) => api.put(`/service-orders/${id}`, data).then((r) => r.data),
     pay: (id: string, payments: { method: string; amount: number }[]) =>
       api.put(`/service-orders/${id}`, { status: 'PAGO', payments }).then((r) => r.data),
@@ -94,7 +116,8 @@ export const crm = {
   cash: {
     today: () => api.get('/cash/today').then((r) => r.data),
     history: (days = 60) => api.get(`/cash/history?days=${days}`).then((r) => r.data),
-    open: (data: { openingBalance: number; operatorName: string }) =>
+    suggestedOpening: () => api.get('/cash/suggested-opening').then((r) => r.data),
+    open: (data: { openingBalance: number; digitalOpeningBalance?: number; operatorName: string }) =>
       api.post('/cash/open', data).then((r) => r.data),
     close: (physicalCount: number) =>
       api.post('/cash/close', { physicalCount }).then((r) => r.data),
@@ -102,8 +125,17 @@ export const crm = {
     pendingClose: () => api.get('/cash/pending-close').then((r) => r.data),
     closeById: (id: string, physicalCount: number) =>
       api.post(`/cash/close/${id}`, { physicalCount }).then((r) => r.data),
-    outflow: (data: { amount: number; reason: string }) =>
-      api.post('/cash/outflow', data).then((r) => r.data),
+    outflow: (data: {
+      type?: 'EXPENSE' | 'BILL' | 'PRODUCT' | 'RESERVE';
+      amount?: number;
+      reason?: string;
+      category?: string;
+      supplier?: string;
+      source?: string;
+      billId?: string;
+      productId?: string;
+      quantity?: number;
+    }) => api.post('/cash/outflow', data).then((r) => r.data),
   },
 
   settings: {
@@ -123,6 +155,38 @@ export const crm = {
     updateStatus: (id: string, status: string) =>
       api.put(`/appointments/${id}`, { status }).then((r) => r.data),
     remove: (id: string) => api.delete(`/appointments/${id}`).then((r) => r.data),
+  },
+
+  stock: {
+    products: (activeOnly = false) =>
+      api.get(`/stock/products${activeOnly ? '?activeOnly=true' : ''}`).then((r) => r.data),
+    createProduct: (data: { name: string; unit?: string; minQuantity?: number; costPrice?: number }) =>
+      api.post('/stock/products', data).then((r) => r.data),
+    updateProduct: (id: string, data: any) =>
+      api.put(`/stock/products/${id}`, data).then((r) => r.data),
+    deleteProduct: (id: string) => api.delete(`/stock/products/${id}`).then((r) => r.data),
+    addEntry: (productId: string, data: { quantity: number; costPrice?: number; supplier?: string; notes?: string }) =>
+      api.post(`/stock/products/${productId}/entries`, data).then((r) => r.data),
+    history: (productId: string) =>
+      api.get(`/stock/products/${productId}/history`).then((r) => r.data),
+    addUsage: (data: { serviceOrderId: string; productId: string; quantity: number }) =>
+      api.post('/stock/usages', data).then((r) => r.data),
+    alerts: () => api.get('/stock/alerts').then((r) => r.data),
+    intelligence: () => api.get('/stock/intelligence').then((r) => r.data),
+    submitCount: (items: { productId: string; quantity: number }[], notes?: string) =>
+      api.post('/stock/count', { items, notes }).then((r) => r.data),
+    recentCounts: () => api.get('/stock/counts').then((r) => r.data),
+  },
+
+  bills: {
+    list: (status?: string) =>
+      api.get('/bills', { params: status ? { status } : undefined }).then((r) => r.data),
+    summary: () => api.get('/bills/summary').then((r) => r.data),
+    create: (data: { name: string; category: string; amount: number; dueDate: string; notes?: string; recurring?: boolean }) =>
+      api.post('/bills', data).then((r) => r.data),
+    update: (id: string, data: any) => api.put(`/bills/${id}`, data).then((r) => r.data),
+    remove: (id: string) => api.delete(`/bills/${id}`).then((r) => r.data),
+    markPaid: (id: string) => api.put(`/bills/${id}`, { status: 'PAGO' }).then((r) => r.data),
   },
 
   users: {

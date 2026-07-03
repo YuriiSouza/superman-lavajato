@@ -192,7 +192,7 @@ export default function OrdensPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-gray-700">
-                    {['Placa', 'Cliente', 'Serviço', 'Pagamento', 'Valor', 'Status'].map((h) => (
+                    {['Veículo', 'Cliente', 'Serviço', 'Pagamento', 'Valor', 'Status'].map((h) => (
                       <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{h}</th>
                     ))}
                   </tr>
@@ -200,8 +200,26 @@ export default function OrdensPage() {
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {orders.map((o) => (
                     <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
-                      <td className="px-4 py-3 font-mono text-xs text-gray-600 dark:text-gray-300">{o.vehicle?.plate}</td>
-                      <td className="px-4 py-3 text-gray-900 dark:text-gray-100">{o.client?.name}</td>
+                      <td className="px-4 py-3">
+                        {o.vehicle ? (
+                          <>
+                            <span className="font-mono text-xs text-gray-600 dark:text-gray-300">{o.vehicle.plate}</span>
+                            {o.vehicle.model && <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">· {o.vehicle.model}</span>}
+                          </>
+                        ) : (
+                          <span className="text-xs text-gray-400 dark:text-gray-500 italic">{o.customerDescription ?? '—'}</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
+                        <div className="flex items-center gap-1.5">
+                          {o.client?.name ?? <span className="text-gray-400 dark:text-gray-500 text-xs italic">—</span>}
+                          {o.client?.phone && (
+                            <a href={`https://wa.me/55${o.client.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600" title="WhatsApp">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                            </a>
+                          )}
+                        </div>
+                      </td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{o.service?.name}</td>
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{paymentSummary(o)}</td>
                       <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{fmt(o.totalValue)}</td>
@@ -226,9 +244,14 @@ export default function OrdensPage() {
                 <div key={o.id} className="p-4 space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{o.client?.name}</p>
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                        {o.client?.name ?? o.customerDescription ?? '—'}
+                      </p>
                       <p className="text-xs text-gray-400 dark:text-gray-500">
-                        <span className="font-mono">{o.vehicle?.plate}</span> · {o.service?.name}
+                        {o.vehicle ? (
+                          <><span className="font-mono">{o.vehicle.plate}</span>{o.vehicle.model && <> · {o.vehicle.model}</>}{' · '}</>
+                        ) : null}
+                        {o.service?.name}
                       </p>
                     </div>
                     <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 shrink-0">{fmt(o.totalValue)}</span>

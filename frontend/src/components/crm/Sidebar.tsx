@@ -9,6 +9,7 @@ import {
   LayoutDashboard, Users, ClipboardList, MessageCircle,
   UsersRound, DollarSign, Settings, LogOut, Sun, Moon,
   Wrench, UserCog, ChevronLeft, ChevronRight, X, CalendarDays,
+  Package, Receipt, TrendingUp,
 } from 'lucide-react';
 
 type Role = 'ADMIN' | 'CAIXA' | 'OPERADOR';
@@ -26,7 +27,9 @@ const nav = [
   ]},
   { label: 'Financeiro', items: [
     { href: '/admin/financeiro',  icon: DollarSign,      label: 'Caixa do dia',       roles: ['ADMIN', 'CAIXA'] as Role[] },
-    { href: '/admin/caixa',       icon: LayoutDashboard, label: 'Dashboard do caixa', roles: ['ADMIN'] as Role[] },
+    { href: '/admin/resultado',   icon: TrendingUp,      label: 'Resultado (DRE)',    roles: ['ADMIN'] as Role[] },
+    { href: '/admin/contas',      icon: Receipt,         label: 'Contas a pagar',     roles: ['ADMIN'] as Role[] },
+    { href: '/admin/estoque',     icon: Package,         label: 'Estoque',            roles: ['ADMIN'] as Role[] },
   ]},
   { label: 'Sistema', items: [
     { href: '/admin/servicos',    icon: Wrench,          label: 'Serviços',           roles: ['ADMIN'] as Role[] },

@@ -3,8 +3,10 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  DollarSign, Zap, TrendingDown, Clock, AlertCircle,
-  Plus, Download, MessageCircle, Car,
+  DollarSign, Zap, TrendingDown, AlertCircle,
+  Plus, Download, MessageCircle,
+  TrendingUp, AlertTriangle, CheckCircle2,
+  Package, PiggyBank, Receipt, Wallet,
 } from 'lucide-react';
 import Link from 'next/link';
 import { crm } from '@/lib/crm/api';
@@ -36,7 +38,8 @@ type Period = typeof PERIOD_TABS[number]['key'];
 
 const CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
-const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0]; // Mon→Sun
+const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -47,6 +50,16 @@ function fmt(v: number) {
 function fmtCompact(v: number) {
   if (v >= 1000) return `R$ ${(v / 1000).toFixed(1)}k`;
   return `R$ ${v.toFixed(0)}`;
+}
+
+function fmtDate(str: string) {
+  const [y, m, d] = str.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+function fmtDateShort(str: string) {
+  const [, m, d] = str.split('-');
+  return `${d}/${m}`;
 }
 
 function getDateRange(period: Period, customStart: string, customEnd: string) {
@@ -95,7 +108,14 @@ function exportCsv(rows: { date: string; revenue: number }[], period: string) {
   URL.revokeObjectURL(url);
 }
 
-// ─── chart: multi-line (total ou por serviço) com hover tooltip ──────────────
+
+function daysUntil(dateStr: string) {
+  const due = new Date(dateStr); due.setHours(12, 0, 0, 0);
+  const today = new Date(); today.setHours(12, 0, 0, 0);
+  return Math.round((due.getTime() - today.getTime()) / 86400000);
+}
+
+// ─── chart: multi-line ───────────────────────────────────────────────────────
 
 function MultiLineChart({
   progression,
@@ -140,7 +160,6 @@ function MultiLineChart({
     const raw = Math.round(((vbX - pL) / iW) * (n - 1));
     const idx = Math.max(0, Math.min(n - 1, raw));
     setHovIdx(idx);
-    // tooltip position: % of container
     setTooltipX(pxInWrap / rect.width);
   }
 
@@ -152,7 +171,6 @@ function MultiLineChart({
   }, []);
   const yTicks = [0, 0.25, 0.5, 0.75, 1].map((f) => ({ y: ty(max * f), label: fmtCompact(max * f) }));
 
-  // tooltip content
   const hovData: any = hovIdx !== null ? data[hovIdx] : null;
 
   return (
@@ -160,7 +178,6 @@ function MultiLineChart({
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setHovIdx(null)}>
 
-      {/* tooltip box */}
       {hovIdx !== null && hovData && (
         <div
           className="pointer-events-none absolute z-10 top-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg px-3 py-2 text-xs min-w-[130px]"
@@ -240,7 +257,6 @@ function MultiLineChart({
           );
         })}
 
-        {/* linha vertical de hover */}
         {hovIdx !== null && (
           <line x1={tx(hovIdx)} y1={pT} x2={tx(hovIdx)} y2={pT + iH}
             stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="3 2" />
@@ -335,7 +351,7 @@ function ServiceFilterPicker({
   );
 }
 
-// ─── chart: donut ───────────────────────────────────────────────────────────
+// ─── chart: donut ────────────────────────────────────────────────────────────
 
 function DonutChart({
   data,
@@ -398,7 +414,7 @@ function DonutChart({
   );
 }
 
-// ─── chart: heatmap ─────────────────────────────────────────────────────────
+// ─── chart: heatmap ──────────────────────────────────────────────────────────
 
 function Heatmap({ matrix }: { matrix: number[][] }) {
   if (!matrix || matrix.length === 0) return null;
@@ -439,7 +455,7 @@ function Heatmap({ matrix }: { matrix: number[][] }) {
   );
 }
 
-// ─── metric card ────────────────────────────────────────────────────────────
+// ─── metric card ─────────────────────────────────────────────────────────────
 
 function Card({ icon: Icon, label, value, sub, color, onClick }: any) {
   return (
@@ -457,12 +473,12 @@ function Card({ icon: Icon, label, value, sub, color, onClick }: any) {
   );
 }
 
-// ─── page ───────────────────────────────────────────────────────────────────
+// ─── page ────────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
   const router = useRouter();
 
-  // filters — persisted in localStorage (initialized with defaults to avoid hydration mismatch)
+  // ── filtros (persistidos) ──
   const [period, setPeriod] = useState<Period>('30d');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
@@ -479,7 +495,7 @@ export default function DashboardPage() {
     setFiltersReady(true);
   }, []);
 
-  // data
+  // ── state original ──
   const [dash, setDash] = useState<any>(null);
   const [summary, setSummary] = useState<any>(null);
   const [progression, setProgression] = useState<{ date: string; revenue: number }[]>([]);
@@ -490,27 +506,48 @@ export default function DashboardPage() {
   const [reactivation, setReactivation] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
 
+  // ── state financeiro novo ──
+  const [profit, setProfit] = useState<any>(null);
+  const [resSummary, setResSummary] = useState<{ count: number; total: number }>({ count: 0, total: 0 });
+  const [upcomingBills, setUpcomingBills] = useState<any[]>([]);
+  const [stockAlerts, setStockAlerts] = useState<any[]>([]);
+
+  // ── state histórico do caixa ──
+  const [caixaData, setCaixaData] = useState<any>(null);
+  const [caixaLoading, setCaixaLoading] = useState(true);
+
   const [loadingInit, setLoadingInit] = useState(true);
   const [loadingCharts, setLoadingCharts] = useState(false);
 
   const pollRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
 
-  // Static data loaded once
+  // ── dados estáticos (carregados uma vez) ──
   useEffect(() => {
     Promise.all([
       crm.orders.today(),
       crm.reactivation.queue(30),
       crm.services.list(),
       crm.financial.heatmap(90),
-    ]).then(([orders, react, svcs, heat]) => {
+      crm.financial.reserves.summary(),
+      crm.bills.list('PENDENTE'),
+      crm.stock.intelligence(),
+    ]).then(([orders, react, svcs, heat, resSumm, bills, intel]) => {
       setTodayOrders(orders);
       setReactivation(react.queue?.slice(0, 5) ?? []);
       setServices(svcs);
       setHeatmap(heat.matrix ?? []);
+      setResSummary(resSumm);
+      const upcoming = bills
+        .map((b: any) => ({ ...b, daysLeft: daysUntil(b.dueDate) }))
+        .filter((b: any) => b.daysLeft <= 5)
+        .sort((a: any, b: any) => a.daysLeft - b.daysLeft)
+        .slice(0, 5);
+      setUpcomingBills(upcoming);
+      setStockAlerts(intel.filter((p: any) => p.estimatedDaysLeft !== null && p.estimatedDaysLeft <= 7));
     });
   }, []);
 
-  // Dashboard KPIs — polled every 30s
+  // ── KPIs + polling 30s ──
   const loadDash = useCallback(() => {
     crm.dashboard().then(setDash).finally(() => setLoadingInit(false));
   }, []);
@@ -521,7 +558,7 @@ export default function DashboardPage() {
     return () => clearInterval(pollRef.current);
   }, [loadDash]);
 
-  // persiste filtros no localStorage
+  // ── persiste filtros ──
   useEffect(() => {
     try {
       localStorage.setItem('dash_period', period);
@@ -531,7 +568,7 @@ export default function DashboardPage() {
     } catch {}
   }, [period, customStart, customEnd, serviceFilter]);
 
-  // Chart data — reloads when period / serviceFilter changes
+  // ── gráficos de período + lucro ──
   const loadCharts = useCallback(() => {
     const range = getDateRange(period, customStart, customEnd);
     if (!range) return;
@@ -541,8 +578,14 @@ export default function DashboardPage() {
       crm.financial.summary(params),
       crm.financial.progression(params),
       crm.financial.revenueByServiceByDay({ start: range.start, end: range.end }),
+      crm.financial.profit({ start: range.start, end: range.end }),
     ])
-      .then(([sum, prog, rbs]) => { setSummary(sum); setProgression(prog); setRevenueByService(rbs); })
+      .then(([sum, prog, rbs, prf]) => {
+        setSummary(sum);
+        setProgression(prog);
+        setRevenueByService(rbs);
+        setProfit(prf);
+      })
       .finally(() => setLoadingCharts(false));
   }, [period, customStart, customEnd, serviceFilter]);
 
@@ -551,22 +594,36 @@ export default function DashboardPage() {
     if (period !== 'custom' || (customStart && customEnd)) loadCharts();
   }, [loadCharts, period, customStart, customEnd, filtersReady]);
 
-  // drill-down: click on status card
+  // ── histórico do caixa (usa o mesmo período do filtro principal) ──
+  const loadCaixa = useCallback(() => {
+    const days = getDateRange(period, customStart, customEnd)?.days ?? 30;
+    setCaixaLoading(true);
+    crm.cash.history(days).then(setCaixaData).finally(() => setCaixaLoading(false));
+  }, [period, customStart, customEnd]);
+
+  useEffect(() => {
+    if (!filtersReady) return;
+    loadCaixa();
+  }, [loadCaixa, filtersReady]);
+
+  // ── drill-downs ──
   function goOrders(status?: string) {
     router.push(`/admin/ordens${status ? `?status=${status}` : ''}`);
   }
-
-  // drill-down: click on donut slice
   function handleDonutClick(serviceName: string) {
     const svc = services.find((s: any) => s.name === serviceName);
     if (svc) router.push(`/admin/ordens?serviceId=${svc.id}`);
   }
 
-  const range = getDateRange(period, customStart, customEnd);
   const periodLabel = PERIOD_TABS.find((t) => t.key === period)?.label ?? '';
+
+  // ── caixa derivados ──
+  const allCaixaDays: any[] = caixaData?.days ?? [];
+  const daysWithActivity = allCaixaDays.filter((d) => d.revenue > 0 || d.session);
 
   return (
     <div className="p-4 md:p-6 space-y-5 overflow-x-hidden">
+
       {/* ── header ── */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -590,51 +647,36 @@ export default function DashboardPage() {
 
       {/* ── filter bar ── */}
       <div className="flex flex-wrap items-center gap-2">
-        {/* Period tabs — scroll horizontal no mobile */}
         <div className="overflow-x-auto">
-        <div className="flex gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 w-max">
-          {PERIOD_TABS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setPeriod(t.key)}
-              className={`text-xs px-3 py-1.5 rounded-md transition-colors whitespace-nowrap ${
-                period === t.key
-                  ? 'bg-white dark:bg-gray-700 font-medium shadow-sm text-gray-900 dark:text-gray-100'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+          <div className="flex gap-0.5 bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 w-max">
+            {PERIOD_TABS.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setPeriod(t.key)}
+                className={`text-xs px-3 py-1.5 rounded-md transition-colors whitespace-nowrap ${
+                  period === t.key
+                    ? 'bg-white dark:bg-gray-700 font-medium shadow-sm text-gray-900 dark:text-gray-100'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Custom date range */}
         {period === 'custom' && (
           <div className="flex items-center gap-1">
-            <input
-              type="date"
-              value={customStart}
-              onChange={(e) => setCustomStart(e.target.value)}
-              className="text-xs px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            />
+            <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)}
+              className="text-xs px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
             <span className="text-xs text-gray-400">até</span>
-            <input
-              type="date"
-              value={customEnd}
-              onChange={(e) => setCustomEnd(e.target.value)}
-              className="text-xs px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
-            />
+            <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)}
+              className="text-xs px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
           </div>
         )}
 
-        {/* Service filter */}
         {services.length > 0 && (
-          <ServiceFilterPicker
-            services={services}
-            value={serviceFilter}
-            onChange={setServiceFilter}
-          />
+          <ServiceFilterPicker services={services} value={serviceFilter} onChange={setServiceFilter} />
         )}
 
         {loadingCharts && (
@@ -642,7 +684,30 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* ── metric cards ── */}
+      {/* ── alerta de estoque ── */}
+      {stockAlerts.length > 0 && (
+        <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-2 mb-2">
+            <AlertTriangle size={14} className="text-red-500 shrink-0" />
+            <span className="text-xs font-semibold text-red-700 dark:text-red-400">
+              Estoque crítico — {stockAlerts.length} produto{stockAlerts.length > 1 ? 's' : ''} com menos de 7 dias restantes
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {stockAlerts.map((p) => (
+              <Link key={p.id} href="/admin/estoque"
+                className="flex items-center gap-1.5 text-xs bg-white dark:bg-gray-900 border border-red-200 dark:border-red-700 rounded-lg px-2.5 py-1 text-red-700 dark:text-red-400 hover:bg-red-50">
+                <Package size={11} />
+                <span className="font-medium">{p.name}</span>
+                <span className="text-red-400">·</span>
+                <span>{p.estimatedDaysLeft <= 0 ? 'Esgotado' : `${p.estimatedDaysLeft}d`}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── KPI cards ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Card
           icon={DollarSign}
@@ -696,11 +761,7 @@ export default function DashboardPage() {
           </div>
           {loadingCharts
             ? <div className="h-36 bg-gray-100 dark:bg-gray-800 rounded animate-pulse" />
-            : <MultiLineChart
-                progression={progression}
-                revenueByService={revenueByService}
-                compareServices={compareServices}
-              />
+            : <MultiLineChart progression={progression} revenueByService={revenueByService} compareServices={compareServices} />
           }
         </div>
 
@@ -718,7 +779,7 @@ export default function DashboardPage() {
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Horários de pico (últimos 90 dias)</h2>
-          <span className="text-xs text-gray-400 dark:text-gray-500">apenas OS pagas</span>
+          <span className="text-xs text-gray-400 dark:text-gray-500">por horário de abertura da OS</span>
         </div>
         {heatmap.length > 0
           ? <Heatmap matrix={heatmap} />
@@ -726,14 +787,81 @@ export default function DashboardPage() {
         }
       </div>
 
-      {/* ── today's orders + reactivation ── */}
+      {/* ── resumo financeiro do período ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Lucro líquido */}
+        <div className={`rounded-xl border p-4 ${
+          (profit?.netProfit ?? 0) >= 0
+            ? 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-700'
+            : 'bg-red-50 dark:bg-red-950/20 border-red-200 dark:border-red-800'
+        }`}>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+              <TrendingUp size={15} className="text-blue-600 dark:text-blue-400" />
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Lucro líquido real ({periodLabel})</p>
+          </div>
+          <p className={`text-xl font-semibold leading-tight ${
+            (profit?.netProfit ?? 0) >= 0 ? 'text-blue-600 dark:text-blue-400' : 'text-red-600'
+          }`}>
+            {loadingCharts ? '—' : `${(profit?.netProfit ?? 0) < 0 ? '-' : ''}${fmt(Math.abs(profit?.netProfit ?? 0))}`}
+          </p>
+          {profit && (summary?.total ?? 0) > 0 && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              margem {((profit.netProfit / summary.total) * 100).toFixed(1)}% · CMV {fmt(profit.cmv)}
+            </p>
+          )}
+        </div>
+
+        {/* Reservas ativas */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-purple-200 dark:border-purple-800 p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+              <PiggyBank size={15} className="text-purple-600 dark:text-purple-400" />
+            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Reservas ativas</p>
+          </div>
+          <p className="text-xl font-semibold text-purple-700 dark:text-purple-300 leading-tight">{fmt(resSummary.total)}</p>
+          <div className="flex items-center justify-between mt-1">
+            <p className="text-xs text-gray-400 dark:text-gray-500">{resSummary.count} reserva{resSummary.count !== 1 ? 's' : ''}</p>
+            <Link href="/admin/financeiro" className="text-xs text-purple-600 dark:text-purple-400 hover:underline">Gerenciar</Link>
+          </div>
+        </div>
+
+        {/* Contas próximas */}
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
+                <Receipt size={15} className="text-red-500" />
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Vence nos próximos 5 dias</p>
+            </div>
+            <Link href="/admin/contas" className="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todas</Link>
+          </div>
+          {upcomingBills.length === 0 ? (
+            <p className="text-sm text-gray-400 dark:text-gray-500">Nenhuma conta vencendo em breve</p>
+          ) : (
+            <div className="space-y-1.5">
+              {upcomingBills.map((b: any) => (
+                <div key={b.id} className="flex items-center justify-between text-xs">
+                  <span className="text-gray-700 dark:text-gray-300 truncate flex-1">{b.name}</span>
+                  <span className={`ml-3 font-medium shrink-0 ${b.daysLeft <= 0 ? 'text-red-500' : b.daysLeft <= 2 ? 'text-amber-500' : 'text-gray-500 dark:text-gray-400'}`}>
+                    {b.daysLeft === 0 ? 'Hoje' : b.daysLeft < 0 ? `${Math.abs(b.daysLeft)}d atrás` : `${b.daysLeft}d`} · {fmt(Number(b.amount))}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── ordens de hoje + reativação ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Ordens de hoje</h2>
-            <Link href="/admin/ordens" className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-              Ver todas
-            </Link>
+            <Link href="/admin/ordens" className="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver todas</Link>
           </div>
           {todayOrders.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-10">Nenhuma ordem hoje ainda.</p>
@@ -761,9 +889,7 @@ export default function DashboardPage() {
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Reativação urgente</h2>
-            <Link href="/admin/reativacao" className="text-xs text-blue-600 dark:text-blue-400 hover:underline">
-              Ver fila
-            </Link>
+            <Link href="/admin/reativacao" className="text-xs text-blue-600 dark:text-blue-400 hover:underline">Ver fila</Link>
           </div>
           {reactivation.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-10">Nenhum cliente na fila.</p>
@@ -779,8 +905,7 @@ export default function DashboardPage() {
                   </div>
                   <a
                     href={`https://wa.me/55${c.phone.replace(/\D/g, '')}?text=${encodeURIComponent(c.whatsappMessage)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 hover:text-green-700 shrink-0"
                   >
                     <MessageCircle size={13} /> Enviar
@@ -792,12 +917,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── forma de pagamento (hoje) ── */}
+      {/* ── formas de pagamento hoje ── */}
       {dash?.today?.byPayment && Object.keys(dash.today.byPayment).length > 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-            Formas de pagamento hoje
-          </h2>
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">Formas de pagamento hoje</h2>
           <div className="flex gap-6 flex-wrap">
             {Object.entries(dash.today.byPayment).map(([method, value]: any) => (
               <div key={method}>
@@ -808,6 +931,84 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ── histórico de caixas ── */}
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700">
+        <div className="px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Histórico de caixas</h2>
+        </div>
+        {caixaLoading ? (
+          <div className="p-4 space-y-2 animate-pulse">
+            {[...Array(6)].map((_, i) => <div key={i} className="h-10 bg-gray-100 dark:bg-gray-800 rounded" />)}
+          </div>
+        ) : daysWithActivity.length === 0 ? (
+          <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-12">Nenhum dado no período.</p>
+        ) : (
+          <>
+            <div className="hidden md:grid grid-cols-[120px_1fr_1fr_1fr_1fr_110px_100px] gap-3 px-4 py-2 text-xs font-medium text-gray-400 dark:text-gray-500 border-b border-gray-100 dark:border-gray-700">
+              <span>Data</span><span>Receita</span><span>Espécie</span>
+              <span>Digital</span><span>Sangrias</span><span>Diferença</span><span>Status</span>
+            </div>
+            <div className="divide-y divide-gray-100 dark:divide-gray-700">
+              {daysWithActivity.map((d) => {
+                const hasDiff = d.difference !== null && Math.abs(d.difference) >= 0.01;
+                const isOpen = d.session && !d.session.closedAt;
+                const isToday = d.date === new Date().toISOString().slice(0, 10);
+                return (
+                  <div key={d.date}
+                    onClick={() => isToday && router.push('/admin/financeiro')}
+                    className={`grid grid-cols-2 md:grid-cols-[120px_1fr_1fr_1fr_1fr_110px_100px] gap-3 px-4 py-3 text-sm items-center ${
+                      isToday ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/30' : ''
+                    }`}>
+                    <div>
+                      <p className="font-medium text-gray-900 dark:text-gray-100">
+                        {fmtDate(d.date)}
+                        {isToday && <span className="ml-1.5 text-xs text-blue-600 dark:text-blue-400 font-normal">hoje</span>}
+                      </p>
+                      {d.session?.operatorName && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500">{d.session.operatorName}</p>
+                      )}
+                    </div>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">{fmt(d.revenue)}</p>
+                    <p className="text-gray-600 dark:text-gray-300 hidden md:block">{fmt(d.cashIn)}</p>
+                    <p className="text-gray-600 dark:text-gray-300 hidden md:block">{fmt(d.digital)}</p>
+                    <p className={`hidden md:block ${d.outflowsTotal > 0 ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500'}`}>
+                      {d.outflowsTotal > 0 ? `−${fmt(d.outflowsTotal)}` : '—'}
+                    </p>
+                    <div className="hidden md:flex items-center gap-1">
+                      {d.difference === null ? (
+                        <span className="text-gray-300 dark:text-gray-600">—</span>
+                      ) : hasDiff ? (
+                        <span className={`flex items-center gap-1 text-xs font-medium ${
+                          d.difference < 0 ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'
+                        }`}>
+                          <AlertTriangle size={11} />
+                          {d.difference < 0 ? '-' : '+'}{fmt(Math.abs(d.difference))}
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                          <CheckCircle2 size={11} /> OK
+                        </span>
+                      )}
+                    </div>
+                    <div>
+                      {!d.session ? (
+                        <span className="text-xs text-gray-400 dark:text-gray-500">Sem caixa</span>
+                      ) : isOpen ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 font-medium">Aberto</span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium">Fechado</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+
+
     </div>
   );
 }

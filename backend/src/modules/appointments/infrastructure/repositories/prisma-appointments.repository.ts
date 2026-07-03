@@ -39,25 +39,13 @@ export class PrismaAppointmentsRepository {
     const CLOSE = '18:00';
     const SLOT_INTERVAL = 30; // gerar slots a cada 30min
 
-    // busca agendamentos do dia (exceto cancelados)
-    const booked = await this.prisma.appointment.findMany({
-      where: { date, status: { not: 'CANCELADO' } },
-      select: { startTime: true, endTime: true },
-    });
-
     const slots: string[] = [];
     let current = OPEN;
 
     while (true) {
       const end = addMinutes(current, duration);
       if (end > CLOSE) break;
-
-      // verifica conflito com qualquer agendamento existente
-      const conflict = booked.some(
-        (b) => current < b.endTime && end > b.startTime,
-      );
-
-      if (!conflict) slots.push(current);
+      slots.push(current);
       current = addMinutes(current, SLOT_INTERVAL);
     }
 

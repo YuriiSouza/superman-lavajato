@@ -3,17 +3,29 @@ import { IsEnum, IsNumber, IsOptional, IsString, IsUUID, Min } from 'class-valid
 import { PaymentMethod, OrderStatus } from '@prisma/client';
 
 export class CreateServiceOrderDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsUUID()
-  clientId: string;
+  @IsOptional()
+  clientId?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsUUID()
-  vehicleId: string;
+  @IsOptional()
+  vehicleId?: string;
 
   @ApiProperty()
   @IsUUID()
   serviceId: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  customerDescription?: string;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  scheduledAt?: string;
 
   @ApiPropertyOptional()
   @IsOptional()

@@ -10,6 +10,7 @@ export class PrismaServicesRepository {
   findAll(activeOnly = false) {
     return this.prisma.service.findMany({
       where: activeOnly ? { active: true } : undefined,
+      include: { category: { select: { id: true, name: true, requiresVehicle: true } } },
       orderBy: { price: 'asc' },
     });
   }

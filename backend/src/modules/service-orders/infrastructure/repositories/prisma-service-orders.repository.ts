@@ -6,7 +6,7 @@ import { UpdateServiceOrderDto } from '../../application/dtos/update-service-ord
 const include = {
   client:   { select: { id: true, name: true, phone: true } },
   vehicle:  { select: { id: true, plate: true, model: true, color: true } },
-  service:  { select: { id: true, name: true, price: true } },
+  service:  { select: { id: true, name: true, price: true, category: { select: { id: true, name: true, requiresVehicle: true } } } },
   payments: true,
 };
 
@@ -41,7 +41,9 @@ export class PrismaServiceOrdersRepository {
   }
 
   create(dto: CreateServiceOrderDto) {
-    const { ...data } = dto;
+    const { scheduledAt, ...rest } = dto as any;
+    const data: any = { ...rest };
+    if (scheduledAt) data.scheduledAt = new Date(scheduledAt);
     return this.prisma.serviceOrder.create({ data, include });
   }
 

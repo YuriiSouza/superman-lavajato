@@ -5,10 +5,12 @@ import { useSession } from 'next-auth/react';
 import {
   Wallet, TrendingUp, Smartphone, ArrowDownCircle,
   Plus, X, Lock, Unlock, AlertTriangle, CheckCircle2, Clock, ClipboardList,
+  FileText, Package, ChevronLeft, PiggyBank,
 } from 'lucide-react';
 import { crm } from '@/lib/crm/api';
 import NovaOSModal from '@/components/crm/NovaOSModal';
 import ReceberPagamentoModal from '@/components/crm/ReceberPagamentoModal';
+import VehicleTypeChart from '@/components/crm/VehicleTypeChart';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -90,16 +92,69 @@ export default function CaixaPage() {
   const [savingPending, setSavingPending]     = useState(false);
 
   // forms
-  const [openingBalance, setOpeningBalance] = useState('0');
-  const [physicalCount, setPhysicalCount]   = useState('');
+  const [openingBalance, setOpeningBalance]     = useState('0');
+  const [digitalOpening, setDigitalOpening]     = useState('0');
+  const [physicalCount, setPhysicalCount]       = useState('');
+  const [saving, setSaving] = useState(false);
+
+  // outflow modal
+  const [outflowType, setOutflowType]       = useState<'EXPENSE' | 'BILL' | 'PRODUCT' | 'RESERVE' | null>(null);
+  const [outflowSource, setOutflowSource]   = useState<'FISICO' | 'DIGITAL'>('FISICO');
+  // EXPENSE
   const [outflowAmount, setOutflowAmount]   = useState('');
   const [outflowReason, setOutflowReason]   = useState('');
-  const [saving, setSaving] = useState(false);
+  // BILL
+  const [outflowBills, setOutflowBills]     = useState<any[]>([]);
+  const [selectedBill, setSelectedBill]     = useState<any>(null);
+  const [billAmount, setBillAmount]         = useState('');
+  // PRODUCT
+  const [outflowProducts, setOutflowProducts] = useState<any[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [productQty, setProductQty]           = useState('');
+  const [productAmount, setProductAmount]     = useState('');
+  const [productSupplier, setProductSupplier] = useState('');
+  // RESERVE
+  const [reserveBill, setReserveBill]         = useState<any>(null);
+  const [reserveAmount, setReserveAmount]     = useState('');
+  const [reserveNote, setReserveNote]         = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
     crm.cash.today().then(setData).finally(() => setLoading(false));
   }, []);
+
+  function resetOutflowModal() {
+    setOutflowModal(false);
+    setOutflowType(null);
+    setOutflowSource('FISICO');
+    setOutflowAmount('');
+    setOutflowReason('');
+    setSelectedBill(null);
+    setBillAmount('');
+    setSelectedProduct(null);
+    setProductQty('');
+    setProductAmount('');
+    setProductSupplier('');
+    setReserveBill(null);
+    setReserveAmount('');
+    setReserveNote('');
+  }
+
+  function openOutflowModal() {
+    setOutflowModal(true);
+    crm.bills.list().then((all: any[]) =>
+      setOutflowBills(all.filter((b) => b.status !== 'PAGO'))
+    );
+    crm.stock.products(true).then(setOutflowProducts);
+  }
+
+  function isOutflowValid() {
+    if (outflowType === 'BILL') return !!selectedBill && Number(billAmount) > 0;
+    if (outflowType === 'PRODUCT') return !!selectedProduct && Number(productQty) > 0 && Number(productAmount) > 0;
+    if (outflowType === 'EXPENSE') return Number(outflowAmount) > 0 && !!outflowReason.trim();
+    if (outflowType === 'RESERVE') return !!reserveBill && Number(reserveAmount) > 0;
+    return false;
+  }
 
   useEffect(() => {
     load();
@@ -154,15 +209,26 @@ export default function CaixaPage() {
 
   // ── ações ─────────────────────────────────────────────────────────────────
 
+  async function openCashModal() {
+    setOpenModal(true);
+    try {
+      const s = await crm.cash.suggestedOpening();
+      setOpeningBalance(String(s.cash));
+      setDigitalOpening(String(s.digital));
+    } catch { /* sem sugestão, mantém 0 */ }
+  }
+
   async function handleOpen() {
     setSaving(true);
     try {
       await crm.cash.open({
         openingBalance: parseFloat(openingBalance.replace(',', '.')) || 0,
+        digitalOpeningBalance: parseFloat(digitalOpening.replace(',', '.')) || 0,
         operatorName: session?.user?.name ?? 'Operador',
       });
       setOpenModal(false);
       setOpeningBalance('0');
+      setDigitalOpening('0');
       load();
     } finally { setSaving(false); }
   }
@@ -180,14 +246,42 @@ export default function CaixaPage() {
   }
 
   async function handleOutflow() {
-    const amount = parseFloat(outflowAmount.replace(',', '.'));
-    if (!amount || !outflowReason.trim()) return;
+    if (!isOutflowValid()) return;
     setSaving(true);
     try {
-      await crm.cash.outflow({ amount, reason: outflowReason.trim() });
-      setOutflowModal(false);
-      setOutflowAmount('');
-      setOutflowReason('');
+      if (outflowType === 'BILL' && selectedBill) {
+        await crm.cash.outflow({
+          type: 'BILL',
+          billId: selectedBill.id,
+          amount: parseFloat(billAmount.replace(',', '.')),
+          source: outflowSource,
+        });
+      } else if (outflowType === 'PRODUCT' && selectedProduct) {
+        await crm.cash.outflow({
+          type: 'PRODUCT',
+          productId: selectedProduct.id,
+          quantity: parseFloat(productQty.replace(',', '.')),
+          amount: parseFloat(productAmount.replace(',', '.')),
+          supplier: productSupplier.trim() || undefined,
+          source: outflowSource,
+        });
+      } else if (outflowType === 'RESERVE' && reserveBill) {
+        await crm.cash.outflow({
+          type: 'RESERVE',
+          billId: reserveBill.id,
+          amount: parseFloat(reserveAmount.replace(',', '.')),
+          reason: reserveNote.trim() || undefined,
+          source: outflowSource,
+        });
+      } else if (outflowType === 'EXPENSE') {
+        await crm.cash.outflow({
+          type: 'EXPENSE',
+          amount: parseFloat(outflowAmount.replace(',', '.')),
+          reason: outflowReason.trim(),
+          source: outflowSource,
+        });
+      }
+      resetOutflowModal();
       load();
     } finally { setSaving(false); }
   }
@@ -199,12 +293,16 @@ export default function CaixaPage() {
   const isClosed = !!cashSession && !!cashSession.closedAt;
   const hasToday = !!cashSession;
 
-  const revenue        = data?.revenue ?? { total: 0, byPayment: {}, ordersCount: 0, orders: [] };
-  const cashReceived   = data?.cashReceived   ?? 0;
-  const digitalReceived = data?.digitalReceived ?? 0;
-  const outflowsTotal  = data?.outflowsTotal  ?? 0;
-  const cashInDrawer   = data?.cashInDrawer   ?? 0;
-  const difference     = data?.difference     ?? null;
+  const revenue          = data?.revenue ?? { total: 0, byPayment: {}, ordersCount: 0, orders: [] };
+  const cashReceived          = data?.cashReceived          ?? 0;
+  const digitalReceived       = data?.digitalReceived       ?? 0;
+  const digitalOpeningBalance = data?.digitalOpeningBalance ?? 0;
+  const digitalBalance        = data?.digitalBalance        ?? 0;
+  const cashOutflows          = data?.cashOutflows          ?? 0;
+  const digitalOutflows       = data?.digitalOutflows       ?? 0;
+  const outflowsTotal         = data?.outflowsTotal         ?? 0;
+  const cashInDrawer          = data?.cashInDrawer          ?? 0;
+  const difference            = data?.difference            ?? null;
 
   // contagem física digitada pelo usuário (preview em tempo real)
   const previewCount = parseFloat(physicalCount.replace(',', '.'));
@@ -226,7 +324,7 @@ export default function CaixaPage() {
           <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">O caixa ainda não foi aberto hoje.</p>
         </div>
         <button
-          onClick={() => setOpenModal(true)}
+          onClick={openCashModal}
           className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
         >
           <Unlock size={16} /> Abrir caixa
@@ -236,7 +334,7 @@ export default function CaixaPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Saldo de abertura (troco em espécie)
+                Dinheiro na gaveta (R$)
               </label>
               <input
                 type="number" min="0" step="0.01"
@@ -245,7 +343,21 @@ export default function CaixaPage() {
                 className={inputCls}
               />
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                Valor em dinheiro já existente na gaveta.
+                Notas e moedas físicas na gaveta agora.
+              </p>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Saldo digital — banco / Pix (R$)
+              </label>
+              <input
+                type="number" min="0" step="0.01"
+                value={digitalOpening}
+                onChange={(e) => setDigitalOpening(e.target.value)}
+                className={inputCls}
+              />
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Saldo atual na conta bancária ou carteira digital.
               </p>
             </div>
             <div>
@@ -360,12 +472,12 @@ export default function CaixaPage() {
               <ClipboardList size={13} /> Ver OS
             </button>
             <button
-              onClick={() => setOutflowModal(true)}
+              onClick={openOutflowModal}
               className="flex items-center gap-1.5 text-xs px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
               <ArrowDownCircle size={13} /> Sangria
             </button>
-            <button
+<button
               onClick={() => { load(); setCloseModal(true); }}
               className="flex items-center gap-1.5 text-xs px-3 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
             >
@@ -523,7 +635,9 @@ export default function CaixaPage() {
                 <p className="text-xs text-gray-500 dark:text-gray-400">Receita total</p>
               </div>
               <p className="text-xl font-semibold text-green-600 dark:text-green-400">{fmt(revenue.total)}</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{revenue.ordersCount} OS pagas</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                {revenue.ordersCount} OS · Dinheiro {fmt(cashReceived)} + Digital {fmt(digitalReceived)}
+              </p>
             </div>
 
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
@@ -533,7 +647,8 @@ export default function CaixaPage() {
               </div>
               <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">{fmt(cashInDrawer)}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                Abertura {fmt(Number(cashSession?.openingBalance ?? 0))} + recebido {fmt(cashReceived)} − sangrias {fmt(outflowsTotal)}
+                Abertura {fmt(Number(cashSession?.openingBalance ?? 0))} + recebido {fmt(cashReceived)}
+                {cashOutflows > 0 && ` − sangrias ${fmt(cashOutflows)}`}
               </p>
             </div>
 
@@ -542,8 +657,11 @@ export default function CaixaPage() {
                 <Smartphone size={14} className="text-blue-500" />
                 <p className="text-xs text-gray-500 dark:text-gray-400">Digital (Pix + Cartão)</p>
               </div>
-              <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">{fmt(digitalReceived)}</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Vai direto para o banco</p>
+              <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">{fmt(digitalBalance)}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                Inicial {fmt(digitalOpeningBalance)} + recebido {fmt(digitalReceived)}
+                {digitalOutflows > 0 && ` − saídas ${fmt(digitalOutflows)}`}
+              </p>
             </div>
 
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
@@ -553,7 +671,10 @@ export default function CaixaPage() {
               </div>
               <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">{fmt(outflowsTotal)}</p>
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                {cashSession?.outflows?.length ?? 0} retirada(s)
+                {cashOutflows > 0 && `Espécie ${fmt(cashOutflows)}`}
+                {cashOutflows > 0 && digitalOutflows > 0 && ' · '}
+                {digitalOutflows > 0 && `Digital ${fmt(digitalOutflows)}`}
+                {outflowsTotal === 0 && '—'}
               </p>
             </div>
 
@@ -563,7 +684,9 @@ export default function CaixaPage() {
                 <p className="text-xs text-gray-500 dark:text-gray-400">Lucro líquido</p>
               </div>
               <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">{fmt(revenue.total - outflowsTotal)}</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Receita − sangrias</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                Receita {fmt(revenue.total)} − sangrias {fmt(outflowsTotal)}
+              </p>
             </div>
 
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
@@ -574,7 +697,18 @@ export default function CaixaPage() {
               <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 {revenue.ordersCount > 0 ? fmt(revenue.total / revenue.ordersCount) : 'R$ 0,00'}
               </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                {revenue.ordersCount > 0
+                  ? `${fmt(revenue.total)} ÷ ${revenue.ordersCount} OS`
+                  : 'Nenhuma OS paga hoje'}
+              </p>
             </div>
+          </div>
+
+          {/* ── veículos por tipo ── */}
+          <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+            <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">OS por tipo de veículo</h2>
+            <VehicleTypeChart days={90} />
           </div>
 
           {/* ── formas de pagamento ── */}
@@ -666,7 +800,14 @@ export default function CaixaPage() {
                       {timeOf(f.createdAt)}
                     </div>
                     <p className="flex-1 text-sm text-gray-700 dark:text-gray-300">{f.reason}</p>
-                    <span className="text-sm font-semibold text-red-600 dark:text-red-400">−{fmt(Number(f.amount))}</span>
+                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
+                      f.source === 'DIGITAL'
+                        ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
+                        : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400'
+                    }`}>
+                      {f.source === 'DIGITAL' ? 'Digital' : 'Espécie'}
+                    </span>
+                    <span className="text-sm font-semibold text-red-600 dark:text-red-400 shrink-0">−{fmt(Number(f.amount))}</span>
                   </div>
                 ))}
               </div>
@@ -676,55 +817,336 @@ export default function CaixaPage() {
       )}
 
       {/* ── modal sangria ── */}
-      <Modal open={outflowModal} onClose={() => setOutflowModal(false)} title="Registrar sangria">
-        <div className="space-y-3">
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor (R$)</label>
-            <input
-              type="number" min="0.01" step="0.01" placeholder="0,00"
-              value={outflowAmount}
-              onChange={(e) => setOutflowAmount(e.target.value)}
-              className={inputCls}
-            />
+      <Modal
+        open={outflowModal}
+        onClose={resetOutflowModal}
+        title={
+          outflowType === 'BILL' ? 'Pagar conta' :
+          outflowType === 'RESERVE' ? 'Reservar para conta' :
+          outflowType === 'PRODUCT' ? 'Compra de produto' :
+          outflowType === 'EXPENSE' ? 'Gasto avulso' :
+          'Registrar saída'
+        }
+      >
+        {outflowType === null ? (
+          /* ── escolha do tipo ── */
+          <div className="space-y-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Como você quer registrar essa saída?</p>
+            {([
+              { type: 'BILL',    icon: <FileText size={18} />,        color: 'text-violet-500', label: 'Pagar conta',        desc: 'Quita uma conta a pagar cadastrada' },
+              { type: 'RESERVE', icon: <PiggyBank size={18} />,       color: 'text-emerald-500',label: 'Reservar para conta', desc: 'Separa dinheiro para pagar futuramente' },
+              { type: 'PRODUCT', icon: <Package size={18} />,         color: 'text-amber-500',  label: 'Compra de produto',  desc: 'Registra compra e entrada no estoque' },
+              { type: 'EXPENSE', icon: <ArrowDownCircle size={18} />, color: 'text-red-500',    label: 'Gasto avulso',       desc: 'Despesa avulsa ou sangria de caixa' },
+            ] as const).map(({ type, icon, color, label, desc }) => (
+              <button
+                key={type}
+                onClick={() => setOutflowType(type)}
+                className="w-full flex items-center gap-3 p-3 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+              >
+                <span className={`shrink-0 ${color}`}>{icon}</span>
+                <div>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{label}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">{desc}</p>
+                </div>
+              </button>
+            ))}
           </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo</label>
-            <input
-              type="text" placeholder="Ex: compra de produto de limpeza"
-              value={outflowReason}
-              onChange={(e) => setOutflowReason(e.target.value)}
-              className={inputCls}
-            />
+        ) : (
+          <div className="space-y-3">
+            {/* voltar */}
+            <button
+              onClick={() => setOutflowType(null)}
+              className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+            >
+              <ChevronLeft size={13} /> Voltar
+            </button>
+
+            {/* ── BILL ── */}
+            {outflowType === 'BILL' && (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Conta</label>
+                  {outflowBills.length === 0 ? (
+                    <p className="text-xs text-gray-400 dark:text-gray-500 py-2">
+                      Nenhuma conta pendente. Cadastre em <strong>Contas a pagar</strong>.
+                    </p>
+                  ) : (
+                    <select
+                      value={selectedBill?.id ?? ''}
+                      onChange={(e) => {
+                        const b = outflowBills.find((b: any) => b.id === e.target.value) ?? null;
+                        setSelectedBill(b);
+                        setBillAmount(b ? String(Number(b.amount)) : '');
+                      }}
+                      className={inputCls}
+                    >
+                      <option value="">Selecione uma conta…</option>
+                      {outflowBills.map((b: any) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name} — {fmt(Number(b.amount))}{b.status === 'VENCIDO' ? ' ⚠' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {selectedBill && (
+                  <>
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2 text-xs space-y-1 text-gray-500 dark:text-gray-400">
+                      <div className="flex justify-between">
+                        <span>Vencimento</span>
+                        <span>{new Date(selectedBill.dueDate).toLocaleDateString('pt-BR')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Valor da conta</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-100">{fmt(Number(selectedBill.amount))}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor pago (R$)</label>
+                      <input
+                        type="number" min="0.01" step="0.01"
+                        value={billAmount}
+                        onChange={(e) => setBillAmount(e.target.value)}
+                        className={inputCls}
+                      />
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+
+            {/* ── RESERVE ── */}
+            {outflowType === 'RESERVE' && (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Conta</label>
+                  {outflowBills.length === 0 ? (
+                    <p className="text-xs text-gray-400 dark:text-gray-500 py-2">
+                      Nenhuma conta pendente. Cadastre em <strong>Contas a pagar</strong>.
+                    </p>
+                  ) : (
+                    <select
+                      value={reserveBill?.id ?? ''}
+                      onChange={(e) => {
+                        const b = outflowBills.find((b: any) => b.id === e.target.value) ?? null;
+                        setReserveBill(b);
+                      }}
+                      className={inputCls}
+                    >
+                      <option value="">Selecione uma conta…</option>
+                      {outflowBills.map((b: any) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name} — {fmt(Number(b.amount))}{b.status === 'VENCIDO' ? ' ⚠' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {reserveBill && (
+                  <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg px-3 py-2 text-xs space-y-1 text-gray-500 dark:text-gray-400">
+                    <div className="flex justify-between">
+                      <span>Vencimento</span>
+                      <span>{new Date(reserveBill.dueDate).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Total da conta</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100">{fmt(Number(reserveBill.amount))}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor a reservar (R$)</label>
+                  <input
+                    type="number" min="0.01" step="0.01" placeholder="0,00"
+                    value={reserveAmount}
+                    onChange={(e) => setReserveAmount(e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Observação (opcional)</label>
+                  <input
+                    type="text" placeholder="Ex: parcela 1 de 2"
+                    value={reserveNote}
+                    onChange={(e) => setReserveNote(e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* ── PRODUCT ── */}
+            {outflowType === 'PRODUCT' && (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Produto</label>
+                  {outflowProducts.length === 0 ? (
+                    <p className="text-xs text-gray-400 dark:text-gray-500 py-2">
+                      Nenhum produto cadastrado. Cadastre em <strong>Estoque</strong>.
+                    </p>
+                  ) : (
+                    <select
+                      value={selectedProduct?.id ?? ''}
+                      onChange={(e) => {
+                        const p = outflowProducts.find((p: any) => p.id === e.target.value) ?? null;
+                        setSelectedProduct(p);
+                      }}
+                      className={inputCls}
+                    >
+                      <option value="">Selecione um produto…</option>
+                      {outflowProducts.map((p: any) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} — estoque: {Number(p.quantity)} {p.unit}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+
+                {selectedProduct && (
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
+                    Estoque atual:{' '}
+                    <span className="font-medium text-gray-900 dark:text-gray-100">
+                      {Number(selectedProduct.quantity)} {selectedProduct.unit}
+                    </span>
+                    {selectedProduct.costPrice && (
+                      <span> · Custo anterior: {fmt(Number(selectedProduct.costPrice))}/{selectedProduct.unit}</span>
+                    )}
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade</label>
+                    <input
+                      type="number" min="0.001" step="0.001" placeholder="1"
+                      value={productQty}
+                      onChange={(e) => setProductQty(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Total pago (R$)</label>
+                    <input
+                      type="number" min="0.01" step="0.01" placeholder="0,00"
+                      value={productAmount}
+                      onChange={(e) => setProductAmount(e.target.value)}
+                      className={inputCls}
+                    />
+                  </div>
+                </div>
+
+                {Number(productQty) > 0 && Number(productAmount) > 0 && (
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                    Custo unitário: {fmt(Number(productAmount) / Number(productQty))}/{selectedProduct?.unit ?? 'un'}
+                  </p>
+                )}
+
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Fornecedor (opcional)</label>
+                  <input
+                    type="text" placeholder="Ex: Distribuidora XYZ"
+                    value={productSupplier}
+                    onChange={(e) => setProductSupplier(e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* ── EXPENSE ── */}
+            {outflowType === 'EXPENSE' && (
+              <>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Valor (R$)</label>
+                  <input
+                    type="number" min="0.01" step="0.01" placeholder="0,00"
+                    value={outflowAmount}
+                    onChange={(e) => setOutflowAmount(e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo</label>
+                  <input
+                    type="text" placeholder="Ex: vale transporte, gorjeta…"
+                    value={outflowReason}
+                    onChange={(e) => setOutflowReason(e.target.value)}
+                    className={inputCls}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* origem — comum a todos os tipos */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Origem do valor</label>
+              <div className="flex gap-2">
+                {(['FISICO', 'DIGITAL'] as const).map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setOutflowSource(s)}
+                    className={`flex-1 py-2 rounded-lg text-xs font-medium border transition-colors ${
+                      outflowSource === s
+                        ? s === 'FISICO' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-blue-600 text-white border-blue-600'
+                        : 'border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    {s === 'FISICO' ? 'Espécie (gaveta)' : 'Digital (banco)'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              onClick={handleOutflow}
+              disabled={saving || !isOutflowValid()}
+              className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
+            >
+              {saving ? 'Registrando…' :
+                outflowType === 'BILL' ? 'Confirmar pagamento' :
+                outflowType === 'RESERVE' ? 'Confirmar reserva' :
+                outflowType === 'PRODUCT' ? 'Confirmar compra' :
+                'Registrar saída'}
+            </button>
           </div>
-          <button
-            onClick={handleOutflow}
-            disabled={saving || !outflowAmount || !outflowReason}
-            className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
-          >
-            {saving ? 'Registrando...' : 'Registrar saída'}
-          </button>
-        </div>
+        )}
       </Modal>
 
       {/* ── modal fechar caixa ── */}
       <Modal open={closeModal} onClose={() => setCloseModal(false)} title="Fechar caixa">
         <div className="space-y-4">
           <div className="bg-gray-50 dark:bg-gray-800 rounded-lg px-4 py-3 space-y-1 text-sm">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Gaveta (espécie)</p>
             <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">Saldo de abertura</span>
+              <span className="text-gray-500 dark:text-gray-400">Abertura</span>
               <span className="text-gray-900 dark:text-gray-100">{fmt(Number(cashSession?.openingBalance ?? 0))}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-500 dark:text-gray-400">Dinheiro recebido</span>
               <span className="text-gray-900 dark:text-gray-100">{fmt(cashReceived)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-500 dark:text-gray-400">Sangrias</span>
-              <span className="text-red-500">−{fmt(outflowsTotal)}</span>
-            </div>
+            {cashOutflows > 0 && (
+              <div className="flex justify-between">
+                <span className="text-gray-500 dark:text-gray-400">Sangrias espécie</span>
+                <span className="text-red-500">−{fmt(cashOutflows)}</span>
+              </div>
+            )}
             <div className="flex justify-between font-semibold border-t border-gray-200 dark:border-gray-700 pt-1 mt-1">
               <span className="text-gray-700 dark:text-gray-300">Esperado na gaveta</span>
               <span className="text-gray-900 dark:text-gray-100">{fmt(cashInDrawer)}</span>
+            </div>
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Digital (banco / Pix)</p>
+              <div className="flex justify-between font-semibold">
+                <span className="text-gray-700 dark:text-gray-300">Saldo estimado</span>
+                <span className="text-blue-600 dark:text-blue-400">{fmt(digitalBalance)}</span>
+              </div>
             </div>
           </div>
 
@@ -766,6 +1188,7 @@ export default function CaixaPage() {
           </button>
         </div>
       </Modal>
+
     </div>
   );
 }

@@ -63,15 +63,28 @@ enum VehicleType {
   OUTRO
 }
 
+model ServiceCategory {
+  id              String    @id @default(uuid())
+  name            String
+  requiresVehicle Boolean   @default(true)
+  active          Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  services        Service[]
+
+  @@map("service_categories")
+}
+
 model Service {
-  id          String         @id @default(uuid())
+  id          String           @id @default(uuid())
   name        String
   description String?
-  price       Decimal        @db.Decimal(10, 2)
+  price       Decimal          @db.Decimal(10, 2)
   duration    Int
-  features    Json           @default("[]")
-  highlight   Boolean        @default(false)
-  active        Boolean         @default(true)
+  features    Json             @default("[]")
+  highlight   Boolean          @default(false)
+  active      Boolean          @default(true)
+  categoryId  String?
+  category    ServiceCategory? @relation(fields: [categoryId], references: [id])
   orders        ServiceOrder[]
   appointments  Appointment[]
 
@@ -79,21 +92,24 @@ model Service {
 }
 
 model ServiceOrder {
-  id            String         @id @default(uuid())
-  clientId      String
-  vehicleId     String
-  serviceId     String
-  addons        Json?
-  totalValue    Decimal        @db.Decimal(10, 2)
-  paymentMethod PaymentMethod?
-  status        OrderStatus    @default(PENDENTE)
-  notes         String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  client        Client         @relation(fields: [clientId], references: [id])
-  vehicle       Vehicle        @relation(fields: [vehicleId], references: [id])
-  service       Service        @relation(fields: [serviceId], references: [id])
-  payments      OrderPayment[]
+  id                  String         @id @default(uuid())
+  clientId            String?
+  vehicleId           String?
+  serviceId           String
+  customerDescription String?
+  scheduledAt         DateTime?
+  addons              Json?
+  totalValue          Decimal        @db.Decimal(10, 2)
+  paymentMethod       PaymentMethod?
+  status              OrderStatus    @default(PENDENTE)
+  notes               String?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  client              Client?        @relation(fields: [clientId], references: [id])
+  vehicle             Vehicle?       @relation(fields: [vehicleId], references: [id])
+  service             Service        @relation(fields: [serviceId], references: [id])
+  payments            OrderPayment[]
+  productUsages       ProductUsage[]
 
   @@index([clientId])
   @@index([createdAt])
@@ -129,28 +145,139 @@ enum OrderStatus {
 }
 
 model CashSession {
-  id             String        @id @default(uuid())
-  date           String        // "YYYY-MM-DD" — uma sessão por dia
-  openedAt       DateTime      @default(now())
-  closedAt       DateTime?
-  openingBalance Decimal       @default(0) @db.Decimal(10, 2)
-  physicalCount  Decimal?      @db.Decimal(10, 2)
-  operatorName   String
-  outflows       CashOutflow[]
+  id                    String        @id @default(uuid())
+  date                  String        // "YYYY-MM-DD" — uma sessão por dia
+  openedAt              DateTime      @default(now())
+  closedAt              DateTime?
+  openingBalance        Decimal       @default(0) @db.Decimal(10, 2)
+  digitalOpeningBalance Decimal       @default(0) @db.Decimal(10, 2)
+  physicalCount         Decimal?      @db.Decimal(10, 2)
+  operatorName          String
+  outflows              CashOutflow[]
 
   @@unique([date])
   @@map("cash_sessions")
 }
 
+enum ExpenseCategory {
+  PRODUTO
+  COMBUSTIVEL
+  MANUTENCAO
+  SALARIO
+  ALUGUEL
+  CONTA
+  OUTRO
+}
+
 model CashOutflow {
-  id        String      @id @default(uuid())
+  id        String          @id @default(uuid())
   sessionId String
-  session   CashSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  amount    Decimal     @db.Decimal(10, 2)
+  session   CashSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  amount    Decimal         @db.Decimal(10, 2)
   reason    String
-  createdAt DateTime    @default(now())
+  category  ExpenseCategory @default(OUTRO)
+  source    String          @default("FISICO") // "FISICO" | "DIGITAL"
+  supplier  String?
+  date      DateTime        @default(now())
+  createdAt DateTime        @default(now())
 
   @@map("cash_outflows")
+}
+
+model Product {
+  id          String         @id @default(uuid())
+  name        String
+  unit        String         @default("unidade")
+  quantity    Decimal        @default(0) @db.Decimal(10, 3)
+  minQuantity Decimal        @default(0) @db.Decimal(10, 3)
+  costPrice   Decimal?       @db.Decimal(10, 2)
+  active      Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  entries     StockEntry[]
+  usages      ProductUsage[]
+  counts      StockCount[]
+
+  @@map("products")
+}
+
+model StockCount {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Decimal  @db.Decimal(10, 3)
+  costPrice Decimal? @db.Decimal(10, 2)
+  notes     String?
+  countedAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([countedAt])
+  @@map("stock_counts")
+}
+
+model StockEntry {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Decimal  @db.Decimal(10, 3)
+  costPrice Decimal? @db.Decimal(10, 2)
+  supplier  String?
+  notes     String?
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@map("stock_entries")
+}
+
+model ProductUsage {
+  id             String       @id @default(uuid())
+  serviceOrderId String
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id])
+  quantity       Decimal      @db.Decimal(10, 3)
+  createdAt      DateTime     @default(now())
+
+  @@index([serviceOrderId])
+  @@index([productId])
+  @@map("product_usages")
+}
+
+enum BillStatus {
+  PENDENTE
+  PAGO
+  VENCIDO
+}
+
+model Bill {
+  id        String             @id @default(uuid())
+  name      String
+  category  ExpenseCategory    @default(OUTRO)
+  amount    Decimal            @db.Decimal(10, 2)
+  dueDate   DateTime           @db.Date
+  status    BillStatus         @default(PENDENTE)
+  paidAt    DateTime?
+  notes     String?
+  recurring Boolean            @default(false)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  reserves  FinancialReserve[]
+
+  @@index([dueDate])
+  @@index([status])
+  @@map("bills")
+}
+
+model FinancialReserve {
+  id          String   @id @default(uuid())
+  amount      Decimal  @db.Decimal(10, 2)
+  description String?
+  billId      String
+  bill        Bill     @relation(fields: [billId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([billId])
+  @@map("financial_reserves")
 }
 
 model ReactivationLog {

@@ -77,11 +77,17 @@ export class CashController {
 
     const cashReceived = byPayment['DINHEIRO'] ?? 0;
     const digitalReceived = totalRevenue - cashReceived;
-    const outflowsTotal = session
-      ? session.outflows.reduce((s, f) => s + Number(f.amount), 0)
+    const cashOutflows = session
+      ? session.outflows.filter((f) => f.source !== 'DIGITAL').reduce((s, f) => s + Number(f.amount), 0)
       : 0;
-    const openingBalance = session ? Number(session.openingBalance) : 0;
-    const cashInDrawer = openingBalance + cashReceived - outflowsTotal;
+    const digitalOutflows = session
+      ? session.outflows.filter((f) => f.source === 'DIGITAL').reduce((s, f) => s + Number(f.amount), 0)
+      : 0;
+    const outflowsTotal = cashOutflows + digitalOutflows;
+    const openingBalance        = session ? Number(session.openingBalance) : 0;
+    const digitalOpeningBalance = session ? Number(session.digitalOpeningBalance) : 0;
+    const cashInDrawer   = openingBalance + cashReceived - cashOutflows;
+    const digitalBalance = digitalOpeningBalance + digitalReceived - digitalOutflows;
 
     let difference: number | null = null;
     if (session?.closedAt && session.physicalCount != null) {
@@ -93,19 +99,66 @@ export class CashController {
       revenue: { total: totalRevenue, byPayment, ordersCount: orders.length, orders },
       cashReceived,
       digitalReceived,
+      digitalOpeningBalance,
+      digitalBalance,
+      cashOutflows,
+      digitalOutflows,
       outflowsTotal,
       cashInDrawer,
       difference,
     };
   }
 
+  @Get('suggested-opening')
+  @ApiOperation({ summary: 'Saldos sugeridos para abertura baseados no último dia' })
+  async suggestedOpening() {
+    const tz = 'America/Sao_Paulo';
+    const today = new Date().toLocaleDateString('sv-SE', { timeZone: tz });
+
+    const lastSession = await this.prisma.cashSession.findFirst({
+      where: { date: { lt: today } },
+      include: { outflows: true },
+      orderBy: { date: 'desc' },
+    });
+
+    if (!lastSession) return { cash: 0, digital: 0 };
+
+    // Receita do último dia via order_payments
+    const start = new Date(lastSession.date + 'T00:00:00');
+    const end   = new Date(lastSession.date + 'T23:59:59.999');
+
+    const payments = await this.prisma.orderPayment.findMany({
+      where: { createdAt: { gte: start, lte: end } },
+      select: { method: true, amount: true },
+    });
+
+    const cashReceived    = payments.filter((p) => p.method === 'DINHEIRO').reduce((s, p) => s + Number(p.amount), 0);
+    const digitalReceived = payments.filter((p) => p.method !== 'DINHEIRO').reduce((s, p) => s + Number(p.amount), 0);
+
+    const cashOutflows    = lastSession.outflows.filter((f) => f.source !== 'DIGITAL').reduce((s, f) => s + Number(f.amount), 0);
+    const digitalOutflows = lastSession.outflows.filter((f) => f.source === 'DIGITAL').reduce((s, f) => s + Number(f.amount), 0);
+
+    const cashInDrawer   = Number(lastSession.openingBalance) + cashReceived - cashOutflows;
+    const digitalBalance = Number(lastSession.digitalOpeningBalance) + digitalReceived - digitalOutflows;
+
+    const suggestedCash = lastSession.closedAt && lastSession.physicalCount != null
+      ? Number(lastSession.physicalCount)
+      : cashInDrawer;
+
+    return {
+      cash:    Math.round(Math.max(0, suggestedCash)    * 100) / 100,
+      digital: Math.round(Math.max(0, digitalBalance)   * 100) / 100,
+    };
+  }
+
   @Post('open')
   @ApiOperation({ summary: 'Abre o caixa do dia' })
-  async open(@Body() body: { openingBalance: number; operatorName: string }) {
+  async open(@Body() body: { openingBalance: number; digitalOpeningBalance?: number; operatorName: string }) {
     return this.prisma.cashSession.create({
       data: {
         date: todayStr(),
         openingBalance: body.openingBalance ?? 0,
+        digitalOpeningBalance: body.digitalOpeningBalance ?? 0,
         operatorName: body.operatorName,
       },
       include: { outflows: true },
@@ -199,11 +252,15 @@ export class CashController {
       const dateStr = d.toLocaleDateString('sv-SE', { timeZone: tz });
       const session = sessions.find((s) => s.date === dateStr) ?? null;
       const rev = revenueMap.get(dateStr) ?? { revenue: 0, ordersCount: 0, cash: 0, digital: 0 };
-      const outflowsTotal = session
-        ? session.outflows.reduce((s, f) => s + Number(f.amount), 0)
+      const cashOutflowsDay = session
+        ? session.outflows.filter((f) => f.source !== 'DIGITAL').reduce((s, f) => s + Number(f.amount), 0)
         : 0;
+      const digitalOutflowsDay = session
+        ? session.outflows.filter((f) => f.source === 'DIGITAL').reduce((s, f) => s + Number(f.amount), 0)
+        : 0;
+      const outflowsTotal = cashOutflowsDay + digitalOutflowsDay;
       const openingBalance = session ? Number(session.openingBalance) : 0;
-      const cashInDrawer = openingBalance + rev.cash - outflowsTotal;
+      const cashInDrawer = openingBalance + rev.cash - cashOutflowsDay;
       const difference =
         session?.closedAt && session.physicalCount != null
           ? Number(session.physicalCount) - cashInDrawer
@@ -285,11 +342,82 @@ export class CashController {
 
   @Post('outflow')
   @ApiOperation({ summary: 'Registra uma saída/sangria no caixa' })
-  async outflow(@Body() body: { amount: number; reason: string }) {
+  async outflow(@Body() body: {
+    type?: string;
+    amount?: number;
+    reason?: string;
+    category?: string;
+    supplier?: string;
+    source?: string;
+    billId?: string;
+    productId?: string;
+    quantity?: number;
+  }) {
     const session = await this.prisma.cashSession.findUnique({ where: { date: todayStr() } });
     if (!session || session.closedAt) throw new Error('Caixa não está aberto.');
+    const src = body.source === 'DIGITAL' ? 'DIGITAL' : 'FISICO';
+
+    if (body.type === 'RESERVE' && body.billId) {
+      const bill = await this.prisma.bill.findUnique({ where: { id: body.billId } });
+      if (!bill) throw new Error('Conta não encontrada.');
+      const amount = body.amount ?? 0;
+      await this.prisma.$transaction([
+        this.prisma.cashOutflow.create({
+          data: { sessionId: session.id, amount, reason: `Reserva: ${bill.name}`, category: bill.category as any, source: src },
+        }),
+        this.prisma.financialReserve.create({
+          data: { billId: body.billId, amount, description: body.reason ?? undefined },
+        }),
+      ]);
+      return { ok: true, type: 'RESERVE' };
+    }
+
+    if (body.type === 'BILL' && body.billId) {
+      const bill = await this.prisma.bill.findUnique({ where: { id: body.billId } });
+      if (!bill) throw new Error('Conta não encontrada.');
+      const amount = body.amount != null ? body.amount : Number(bill.amount);
+      await this.prisma.$transaction([
+        this.prisma.cashOutflow.create({
+          data: { sessionId: session.id, amount, reason: bill.name, category: bill.category as any, source: src },
+        }),
+        this.prisma.bill.update({
+          where: { id: body.billId },
+          data: { status: 'PAGO', paidAt: new Date() },
+        }),
+      ]);
+      return { ok: true, type: 'BILL' };
+    }
+
+    if (body.type === 'PRODUCT' && body.productId) {
+      const product = await this.prisma.product.findUnique({ where: { id: body.productId } });
+      if (!product) throw new Error('Produto não encontrado.');
+      const amount = body.amount ?? 0;
+      const qty = body.quantity ?? 1;
+      const unitCost = qty > 0 ? Math.round((amount / qty) * 100) / 100 : undefined;
+      await this.prisma.$transaction([
+        this.prisma.cashOutflow.create({
+          data: { sessionId: session.id, amount, reason: product.name, category: 'PRODUTO', supplier: body.supplier, source: src },
+        }),
+        this.prisma.stockEntry.create({
+          data: { productId: body.productId, quantity: qty, costPrice: unitCost, supplier: body.supplier },
+        }),
+        this.prisma.product.update({
+          where: { id: body.productId },
+          data: { quantity: { increment: qty }, ...(unitCost ? { costPrice: unitCost } : {}) },
+        }),
+      ]);
+      return { ok: true, type: 'PRODUCT' };
+    }
+
     return this.prisma.cashOutflow.create({
-      data: { sessionId: session.id, amount: body.amount, reason: body.reason },
+      data: {
+        sessionId: session.id,
+        amount: body.amount,
+        reason: body.reason,
+        category: (body.category as any) ?? 'OUTRO',
+        source: src,
+        supplier: body.supplier,
+      },
     });
   }
 }

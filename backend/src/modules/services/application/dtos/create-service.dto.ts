@@ -44,4 +44,9 @@ export class CreateServiceDto {
   @IsBoolean()
   @IsOptional()
   active?: boolean;
+
+  @ApiPropertyOptional()
+  @IsString()
+  @IsOptional()
+  categoryId?: string;
 }

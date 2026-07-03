@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
-import { Search, Plus, X, ChevronRight, Car, Trash2 } from 'lucide-react';
+import { Search, Plus, X, ChevronRight, Car, Trash2, MessageCircle } from 'lucide-react';
+
+function waLink(phone: string) {
+  const digits = phone.replace(/\D/g, '');
+  return `https://wa.me/55${digits}`;
+}
 import { crm } from '@/lib/crm/api';
 import OSActionsWidget from '@/components/crm/OSActionsWidget';
 
@@ -192,6 +197,18 @@ export default function ClientesPage() {
                     {c.phone} · {c._count?.orders ?? 0} atendimentos · {c.vehicles?.length ?? 0} veículo(s)
                   </p>
                 </div>
+                {c.phone && (
+                  <a
+                    href={waLink(c.phone)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="text-green-500 hover:text-green-600 flex-shrink-0 p-1"
+                    title="Abrir WhatsApp"
+                  >
+                    <MessageCircle size={16} />
+                  </a>
+                )}
                 <ChevronRight size={16} className="text-gray-300 dark:text-gray-600 flex-shrink-0" />
               </div>
             );
@@ -242,7 +259,19 @@ export default function ClientesPage() {
           <div className="space-y-5">
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{detail.phone}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{detail.phone}</p>
+                  {detail.phone && (
+                    <a
+                      href={waLink(detail.phone)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 hover:underline"
+                    >
+                      <MessageCircle size={13} /> WhatsApp
+                    </a>
+                  )}
+                </div>
                 {detail.notes && <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">{detail.notes}</p>}
               </div>
               <button onClick={() => openEdit(detail)} className="text-xs text-blue-600 dark:text-blue-400 hover:underline">

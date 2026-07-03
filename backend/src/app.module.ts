@@ -14,6 +14,8 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { CashModule } from './modules/cash/cash.module';
 import { UsersModule } from './modules/users/users.module';
 import { AppointmentsModule } from './modules/appointments/appointments.module';
+import { StockModule } from './modules/stock/stock.module';
+import { BillsModule } from './modules/bills/bills.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { AppointmentsModule } from './modules/appointments/appointments.module';
     CashModule,
     UsersModule,
     AppointmentsModule,
+    StockModule,
+    BillsModule,
   ],
 })
 export class AppModule {}
