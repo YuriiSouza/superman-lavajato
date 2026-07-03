@@ -21,7 +21,7 @@ const STATUS_OPTION_LABEL: Record<string, string> = {
 };
 
 const fmt = (v: number) =>
-  `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export default function GlobalActions() {
   const [novaOS, setNovaOS]       = useState(false);

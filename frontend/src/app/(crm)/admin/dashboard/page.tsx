@@ -44,7 +44,7 @@ const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 // ─── helpers ────────────────────────────────────────────────────────────────
 
 function fmt(v: number) {
-  return `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  return `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function fmtCompact(v: number) {

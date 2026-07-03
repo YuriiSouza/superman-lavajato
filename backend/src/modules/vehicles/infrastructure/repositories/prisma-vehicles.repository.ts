@@ -24,11 +24,13 @@ export class PrismaVehiclesRepository {
   }
 
   create(dto: CreateVehicleDto) {
-    return this.prisma.vehicle.create({ data: dto, include: { client: true } });
+    const data = { ...dto, plate: dto.plate?.trim() || null };
+    return this.prisma.vehicle.create({ data, include: { client: true } });
   }
 
   update(id: string, dto: UpdateVehicleDto) {
-    return this.prisma.vehicle.update({ where: { id }, data: dto });
+    const data = { ...dto, ...(dto.plate !== undefined ? { plate: dto.plate?.trim() || null } : {}) };
+    return this.prisma.vehicle.update({ where: { id }, data });
   }
 
   remove(id: string) {

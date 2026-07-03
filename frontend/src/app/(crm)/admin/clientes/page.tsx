@@ -104,7 +104,7 @@ export default function ClientesPage() {
   }
 
   async function handleAddVehicle() {
-    if (!vehicleForm.plate || !vehicleForm.model || !selected) return;
+    if (!vehicleForm.model || !selected) return;
     setSaving(true);
     try {
       await crm.vehicles.create({ ...vehicleForm, clientId: selected.id });
@@ -324,7 +324,7 @@ export default function ClientesPage() {
                     {VEHICLE_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
-                <button onClick={handleAddVehicle} disabled={saving || !vehicleForm.plate || !vehicleForm.model}
+                <button onClick={handleAddVehicle} disabled={saving || !vehicleForm.model}
                   className="w-full py-1.5 bg-gray-900 dark:bg-gray-700 text-white text-xs rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 disabled:opacity-50">
                   {saving ? 'Adicionando...' : 'Adicionar veículo'}
                 </button>

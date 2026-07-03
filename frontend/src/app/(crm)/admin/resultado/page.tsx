@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
 import { crm } from '@/lib/crm/api';
 
 const fmt = (v: number) =>
-  `R$ ${Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  `R$ ${Math.abs(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const fmtCompact = (v: number) => {
   const abs = Math.abs(v);

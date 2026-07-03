@@ -15,7 +15,7 @@ import VehicleTypeChart from '@/components/crm/VehicleTypeChart';
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 const fmt = (v: number) =>
-  `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const PAYMENT_LABEL: Record<string, string> = {
   PIX: 'Pix', DINHEIRO: 'Dinheiro', CARTAO_CREDITO: 'Crédito', CARTAO_DEBITO: 'Débito',

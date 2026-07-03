@@ -12,7 +12,7 @@ import { crm } from '@/lib/crm/api';
 import NovaOSModal from './NovaOSModal';
 import ReceberPagamentoModal from './ReceberPagamentoModal';
 
-const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const STATUS_COLOR: Record<string, string> = {
   PENDENTE:     'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',

@@ -47,7 +47,7 @@ export default function VehicleTypeChart({ days = 90 }: { days?: number }) {
     return slice;
   });
 
-  const fmt = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  const fmt = (v: number) => `R$ ${v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
     <div className="flex flex-col sm:flex-row items-center gap-6">

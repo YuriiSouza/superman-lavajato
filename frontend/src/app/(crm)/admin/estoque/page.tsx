@@ -7,7 +7,7 @@ import { crm } from '@/lib/crm/api';
 const UNIT_OPTIONS = ['unidade', 'litro', 'ml', 'kg', 'g', 'frasco', 'caixa', 'par'];
 
 const fmt     = (v: number) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
-const fmtMoney = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+const fmtMoney = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function daysSince(iso: string | null): number | null {
   if (!iso) return null;

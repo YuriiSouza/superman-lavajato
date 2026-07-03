@@ -33,7 +33,7 @@ const FILTER_TABS = [
 
 const STORAGE_KEY = 'ordens_filters';
 
-const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function todayISO() {
   return new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });

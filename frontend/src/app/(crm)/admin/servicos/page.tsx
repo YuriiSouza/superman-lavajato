@@ -231,7 +231,7 @@ export default function ServicosPage() {
     load();
   }
 
-  const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+  const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   const visible = showInactive ? services : services.filter((s) => s.active);
 
   // Group services by category for display

@@ -238,7 +238,7 @@ export default function SegmentosPage() {
                             <p className="text-xs text-gray-400 dark:text-gray-500">
                               {c.phone}
                               {c.daysSince !== undefined && ` · ${c.daysSince} dias`}
-                              {c.avgTicket && ` · ticket R$ ${Number(c.avgTicket).toFixed(0)}`}
+                              {c.avgTicket && ` · ticket R$ ${Number(c.avgTicket).toFixed(2)}`}
                             </p>
                           </div>
                           {c.phone && (

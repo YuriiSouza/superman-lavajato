@@ -137,7 +137,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
   }
 
   async function handleCreateVehicle() {
-    if (!newVehicle.plate || !newVehicle.model || !selectedClient) return;
+    if (!newVehicle.model || !selectedClient) return;
     setSavingVehicle(true);
     try {
       const created = await crm.vehicles.create({ ...newVehicle, clientId: selectedClient.id });
@@ -376,7 +376,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                       <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-2 bg-gray-50 dark:bg-gray-800/60">
                         <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">Novo veículo</p>
                         <div className="grid grid-cols-2 gap-2">
-                          <input className={inputCls} placeholder="Placa *" value={newVehicle.plate}
+                          <input className={inputCls} placeholder="Placa" value={newVehicle.plate}
                             onChange={(e) => setNewVehicle((p) => ({ ...p, plate: e.target.value.toUpperCase() }))} />
                           <input className={inputCls} placeholder="Modelo *" value={newVehicle.model}
                             onChange={(e) => setNewVehicle((p) => ({ ...p, model: e.target.value }))} />
@@ -392,7 +392,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                             className="flex-1 py-1.5 text-xs border border-gray-300 dark:border-gray-600 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700">
                             Cancelar
                           </button>
-                          <button onClick={handleCreateVehicle} disabled={savingVehicle || !newVehicle.plate || !newVehicle.model}
+                          <button onClick={handleCreateVehicle} disabled={savingVehicle || !newVehicle.model}
                             className="flex-1 py-1.5 text-xs bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-60">
                             {savingVehicle ? 'Adicionando...' : 'Adicionar veículo'}
                           </button>

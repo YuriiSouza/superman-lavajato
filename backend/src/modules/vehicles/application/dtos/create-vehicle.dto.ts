@@ -3,9 +3,10 @@ import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { VehicleType } from '@prisma/client';
 
 export class CreateVehicleDto {
-  @ApiProperty({ example: 'ABC-1234' })
+  @ApiPropertyOptional({ example: 'ABC-1234' })
   @IsString()
-  plate: string;
+  @IsOptional()
+  plate?: string;
 
   @ApiProperty({ example: 'HB20' })
   @IsString()

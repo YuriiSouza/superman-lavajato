@@ -43,7 +43,7 @@ model Client {
 
 model Vehicle {
   id       String      @id @default(uuid())
-  plate    String      @unique
+  plate    String?     @unique
   model    String
   color    String?
   type     VehicleType @default(SEDAN)
