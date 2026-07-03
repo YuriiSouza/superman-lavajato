@@ -1,12 +1,18 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
 
 const DEFAULT_TEMPLATE =
-  'Oi [primeiro_nome]! Já faz [dias] dias que o seu [carro] não aparece aqui. Que tal dar um pulinho? 🦸';
+  "Oi [primeiro_nome]! Já faz [dias] dias que o seu [carro] não aparece aqui. Que tal dar um pulinho? 🦸";
 
 function applyTemplate(
   template: string,
-  vars: { nome: string; primeiro_nome: string; carro: string; placa: string; dias: string },
+  vars: {
+    nome: string;
+    primeiro_nome: string;
+    carro: string;
+    placa: string;
+    dias: string;
+  },
 ): string {
   return template
     .replace(/\[nome\]/g, vars.nome)
@@ -28,19 +34,21 @@ export class GetReactivationQueueUseCase {
         include: {
           vehicles: { select: { plate: true, model: true, color: true } },
           orders: {
-            where: { status: { in: ['CONCLUIDO', 'PAGO'] } },
+            where: { status: { in: ["CONCLUIDO", "PAGO"] } },
             select: { createdAt: true, totalValue: true },
-            orderBy: { createdAt: 'desc' },
+            orderBy: { createdAt: "desc" },
             take: 1,
           },
           reactivationLogs: {
-            orderBy: { sentAt: 'desc' },
+            orderBy: { sentAt: "desc" },
             take: 1,
             select: { sentAt: true, message: true },
           },
         },
       }),
-      this.prisma.setting.findUnique({ where: { key: 'reactivation_template' } }),
+      this.prisma.setting.findUnique({
+        where: { key: "reactivation_template" },
+      }),
     ]);
 
     const template = templateSetting?.value ?? DEFAULT_TEMPLATE;
@@ -54,11 +62,15 @@ export class GetReactivationQueueUseCase {
       .map((c) => {
         const lastOrder = c.orders[0];
         const daysSince = lastOrder
-          ? Math.floor((Date.now() - new Date(lastOrder.createdAt).getTime()) / 86400000)
+          ? Math.floor(
+              (Date.now() - new Date(lastOrder.createdAt).getTime()) / 86400000,
+            )
           : null;
         const vehicle = c.vehicles[0];
-        const carro = vehicle ? `${vehicle.model}${vehicle.color ? ' ' + vehicle.color : ''}`.trim() : 'carro';
-        const placa = vehicle?.plate ?? '';
+        const carro = vehicle
+          ? `${vehicle.model}${vehicle.color ? " " + vehicle.color : ""}`.trim()
+          : "carro";
+        const placa = vehicle?.plate ?? "";
 
         const lastContact = c.reactivationLogs[0] ?? null;
 
@@ -75,10 +87,10 @@ export class GetReactivationQueueUseCase {
             : null,
           whatsappMessage: applyTemplate(template, {
             nome: c.name,
-            primeiro_nome: c.name.split(' ')[0],
+            primeiro_nome: c.name.split(" ")[0],
             carro,
             placa,
-            dias: daysSince != null ? String(daysSince) : 'um tempo',
+            dias: daysSince != null ? String(daysSince) : "um tempo",
           }),
         };
       })

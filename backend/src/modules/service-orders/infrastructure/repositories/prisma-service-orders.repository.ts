@@ -1,12 +1,19 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
-import { CreateServiceOrderDto } from '../../application/dtos/create-service-order.dto';
-import { UpdateServiceOrderDto } from '../../application/dtos/update-service-order.dto';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
+import { CreateServiceOrderDto } from "../../application/dtos/create-service-order.dto";
+import { UpdateServiceOrderDto } from "../../application/dtos/update-service-order.dto";
 
 const include = {
-  client:   { select: { id: true, name: true, phone: true } },
-  vehicle:  { select: { id: true, plate: true, model: true, color: true } },
-  service:  { select: { id: true, name: true, price: true, category: { select: { id: true, name: true, requiresVehicle: true } } } },
+  client: { select: { id: true, name: true, phone: true } },
+  vehicle: { select: { id: true, plate: true, model: true, color: true } },
+  service: {
+    select: {
+      id: true,
+      name: true,
+      price: true,
+      category: { select: { id: true, name: true, requiresVehicle: true } },
+    },
+  },
   payments: true,
 };
 
@@ -20,19 +27,26 @@ export class PrismaServiceOrdersRepository {
     if (filters?.serviceId) where.serviceId = filters.serviceId;
     if (filters?.date) {
       const d = new Date(filters.date);
-      where.createdAt = { gte: new Date(d.setHours(0, 0, 0, 0)), lte: new Date(d.setHours(23, 59, 59, 999)) };
+      where.createdAt = {
+        gte: new Date(d.setHours(0, 0, 0, 0)),
+        lte: new Date(d.setHours(23, 59, 59, 999)),
+      };
     }
-    return this.prisma.serviceOrder.findMany({ where, include, orderBy: { createdAt: 'desc' } });
+    return this.prisma.serviceOrder.findMany({
+      where,
+      include,
+      orderBy: { createdAt: "desc" },
+    });
   }
 
   findToday() {
     const now = new Date();
     const start = new Date(now.setHours(0, 0, 0, 0));
-    const end   = new Date(now.setHours(23, 59, 59, 999));
+    const end = new Date(now.setHours(23, 59, 59, 999));
     return this.prisma.serviceOrder.findMany({
       where: { createdAt: { gte: start, lte: end } },
       include,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -47,11 +61,16 @@ export class PrismaServiceOrdersRepository {
     return this.prisma.serviceOrder.create({ data, include });
   }
 
-  async update(id: string, dto: UpdateServiceOrderDto & { payments?: { method: string; amount: number }[] }) {
+  async update(
+    id: string,
+    dto: UpdateServiceOrderDto & {
+      payments?: { method: string; amount: number }[];
+    },
+  ) {
     const { payments, ...rest } = dto as any;
 
     // Se está sendo marcado como PAGO e vieram entradas de pagamento, registra em transação
-    if (rest.status === 'PAGO' && payments?.length) {
+    if (rest.status === "PAGO" && payments?.length) {
       return this.prisma.$transaction(async (tx) => {
         // Remove pagamentos anteriores (reabertura de caixa ou correção)
         await tx.orderPayment.deleteMany({ where: { serviceOrderId: id } });
@@ -75,7 +94,11 @@ export class PrismaServiceOrdersRepository {
       });
     }
 
-    return this.prisma.serviceOrder.update({ where: { id }, data: rest, include });
+    return this.prisma.serviceOrder.update({
+      where: { id },
+      data: rest,
+      include,
+    });
   }
 
   remove(id: string) {

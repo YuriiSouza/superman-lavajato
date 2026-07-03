@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsArray,
   IsBoolean,
@@ -7,14 +7,16 @@ import {
   IsOptional,
   IsString,
   Min,
-} from 'class-validator';
+} from "class-validator";
 
 export class CreateServiceDto {
-  @ApiProperty({ example: 'Lavagem Completa' })
+  @ApiProperty({ example: "Lavagem Completa" })
   @IsString()
   name: string;
 
-  @ApiPropertyOptional({ example: 'Interna e externa para um carro impecável.' })
+  @ApiPropertyOptional({
+    example: "Interna e externa para um carro impecável.",
+  })
   @IsString()
   @IsOptional()
   description?: string;
@@ -24,12 +26,12 @@ export class CreateServiceDto {
   @Min(0)
   price: number;
 
-  @ApiProperty({ example: 60, description: 'Duração em minutos' })
+  @ApiProperty({ example: 60, description: "Duração em minutos" })
   @IsInt()
   @Min(1)
   duration: number;
 
-  @ApiPropertyOptional({ example: ['Aspiração interna', 'Limpeza de vidros'] })
+  @ApiPropertyOptional({ example: ["Aspiração interna", "Limpeza de vidros"] })
   @IsArray()
   @IsString({ each: true })
   @IsOptional()

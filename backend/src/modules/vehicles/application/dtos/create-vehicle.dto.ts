@@ -1,18 +1,18 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
-import { VehicleType } from '@prisma/client';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsEnum, IsOptional, IsString, IsUUID } from "class-validator";
+import { VehicleType } from "@prisma/client";
 
 export class CreateVehicleDto {
-  @ApiPropertyOptional({ example: 'ABC-1234' })
+  @ApiPropertyOptional({ example: "ABC-1234" })
   @IsString()
   @IsOptional()
   plate?: string;
 
-  @ApiProperty({ example: 'HB20' })
+  @ApiProperty({ example: "HB20" })
   @IsString()
   model: string;
 
-  @ApiPropertyOptional({ example: 'Prata' })
+  @ApiPropertyOptional({ example: "Prata" })
   @IsString()
   @IsOptional()
   color?: string;

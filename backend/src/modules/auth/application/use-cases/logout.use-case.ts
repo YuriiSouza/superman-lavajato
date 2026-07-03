@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
 
 @Injectable()
 export class LogoutUseCase {
@@ -10,7 +10,7 @@ export class LogoutUseCase {
       where: { id: userId },
       data: { hashedRefreshToken: null },
     });
-    res.clearCookie('access_token');
-    res.clearCookie('refresh_token');
+    res.clearCookie("access_token");
+    res.clearCookie("refresh_token");
   }
 }

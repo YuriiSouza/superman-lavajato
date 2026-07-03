@@ -1,11 +1,11 @@
-import { GetDashboardUseCase } from '../get-dashboard.use-case';
+import { GetDashboardUseCase } from "../get-dashboard.use-case";
 
 const prisma = {
   serviceOrder: { findMany: jest.fn(), count: jest.fn().mockResolvedValue(0) },
   client: { count: jest.fn() },
 };
 
-describe('GetDashboardUseCase', () => {
+describe("GetDashboardUseCase", () => {
   let useCase: GetDashboardUseCase;
 
   beforeEach(() => {
@@ -13,7 +13,7 @@ describe('GetDashboardUseCase', () => {
     useCase = new GetDashboardUseCase(prisma as any);
   });
 
-  it('should return zero metrics when no orders today', async () => {
+  it("should return zero metrics when no orders today", async () => {
     prisma.serviceOrder.findMany.mockResolvedValue([]);
     prisma.serviceOrder.count.mockResolvedValue(0);
     prisma.client.count.mockResolvedValue(0);
@@ -25,11 +25,11 @@ describe('GetDashboardUseCase', () => {
     expect(result.today.avgTicket).toBe(0);
   });
 
-  it('should calculate correct revenue and avgTicket from today orders', async () => {
+  it("should calculate correct revenue and avgTicket from today orders", async () => {
     const orders = [
-      { totalValue: 100, paymentMethod: 'PIX' },
-      { totalValue: 50, paymentMethod: 'PIX' },
-      { totalValue: 150, paymentMethod: 'DINHEIRO' },
+      { totalValue: 100, paymentMethod: "PIX" },
+      { totalValue: 50, paymentMethod: "PIX" },
+      { totalValue: 150, paymentMethod: "DINHEIRO" },
     ];
     prisma.serviceOrder.findMany.mockResolvedValue(orders);
     prisma.serviceOrder.count.mockResolvedValue(0);
@@ -42,11 +42,11 @@ describe('GetDashboardUseCase', () => {
     expect(result.today.avgTicket).toBe(100);
   });
 
-  it('should group payments by method', async () => {
+  it("should group payments by method", async () => {
     const orders = [
-      { totalValue: 100, paymentMethod: 'PIX' },
-      { totalValue: 50, paymentMethod: 'DINHEIRO' },
-      { totalValue: 75, paymentMethod: 'PIX' },
+      { totalValue: 100, paymentMethod: "PIX" },
+      { totalValue: 50, paymentMethod: "DINHEIRO" },
+      { totalValue: 75, paymentMethod: "PIX" },
     ];
     prisma.serviceOrder.findMany.mockResolvedValue(orders);
     prisma.serviceOrder.count.mockResolvedValue(0);
@@ -54,18 +54,16 @@ describe('GetDashboardUseCase', () => {
 
     const result = await useCase.execute();
 
-    expect(result.today.byPayment['PIX']).toBe(175);
-    expect(result.today.byPayment['DINHEIRO']).toBe(50);
+    expect(result.today.byPayment["PIX"]).toBe(175);
+    expect(result.today.byPayment["DINHEIRO"]).toBe(50);
   });
 
-  it('should return client totals and order queues', async () => {
+  it("should return client totals and order queues", async () => {
     prisma.serviceOrder.findMany.mockResolvedValue([]);
     prisma.serviceOrder.count
-      .mockResolvedValueOnce(3)  // pendingCount
+      .mockResolvedValueOnce(3) // pendingCount
       .mockResolvedValueOnce(2); // activeCount
-    prisma.client.count
-      .mockResolvedValueOnce(20)
-      .mockResolvedValueOnce(3);
+    prisma.client.count.mockResolvedValueOnce(20).mockResolvedValueOnce(3);
 
     const result = await useCase.execute();
 

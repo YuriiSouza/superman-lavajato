@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
-import { CreateServiceDto } from '../../application/dtos/create-service.dto';
-import { UpdateServiceDto } from '../../application/dtos/update-service.dto';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
+import { CreateServiceDto } from "../../application/dtos/create-service.dto";
+import { UpdateServiceDto } from "../../application/dtos/update-service.dto";
 
 @Injectable()
 export class PrismaServicesRepository {
@@ -10,8 +10,10 @@ export class PrismaServicesRepository {
   findAll(activeOnly = false) {
     return this.prisma.service.findMany({
       where: activeOnly ? { active: true } : undefined,
-      include: { category: { select: { id: true, name: true, requiresVehicle: true } } },
-      orderBy: { price: 'asc' },
+      include: {
+        category: { select: { id: true, name: true, requiresVehicle: true } },
+      },
+      orderBy: { price: "asc" },
     });
   }
 

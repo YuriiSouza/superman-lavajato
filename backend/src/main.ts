@@ -1,8 +1,8 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import * as cookieParser from 'cookie-parser';
-import { AppModule } from './app.module';
+import { NestFactory } from "@nestjs/core";
+import { ValidationPipe } from "@nestjs/common";
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import * as cookieParser from "cookie-parser";
+import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -11,31 +11,33 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
   const corsOrigins = process.env.CORS_ORIGINS
-    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+    ? process.env.CORS_ORIGINS.split(",").map((o) => o.trim())
     : [];
 
   app.enableCors({
     origin: [frontendUrl, ...corsOrigins],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   });
 
   const config = new DocumentBuilder()
-    .setTitle('Superman Lava-Jato CRM')
-    .setDescription('API do sistema de gestão do Superman Lava-Jato')
-    .setVersion('1.0')
+    .setTitle("Superman Lava-Jato CRM")
+    .setDescription("API do sistema de gestão do Superman Lava-Jato")
+    .setVersion("1.0")
     .addBearerAuth()
-    .addCookieAuth('access_token')
+    .addCookieAuth("access_token")
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup("docs", app, document);
 
   const httpAdapter = app.getHttpAdapter();
-  httpAdapter.get('/health', (_req: any, res: any) => res.status(200).json({ status: 'ok' }));
+  httpAdapter.get("/health", (_req: any, res: any) =>
+    res.status(200).json({ status: "ok" }),
+  );
 
   const port = process.env.PORT || 3001;
   await app.listen(port);

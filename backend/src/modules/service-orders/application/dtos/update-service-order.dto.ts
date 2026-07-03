@@ -1,9 +1,16 @@
-import { PartialType } from '@nestjs/swagger';
-import { IsArray, IsEnum, IsNumber, IsOptional, Min, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { PaymentMethod } from '@prisma/client';
-import { CreateServiceOrderDto } from './create-service-order.dto';
+import { PartialType } from "@nestjs/swagger";
+import {
+  IsArray,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  Min,
+  ValidateNested,
+} from "class-validator";
+import { Type } from "class-transformer";
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { PaymentMethod } from "@prisma/client";
+import { CreateServiceOrderDto } from "./create-service-order.dto";
 
 class PaymentEntryDto {
   @IsEnum(PaymentMethod)

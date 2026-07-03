@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../../infrastructure/prisma/prisma.service';
-import { CreateClientDto } from '../../application/dtos/create-client.dto';
-import { UpdateClientDto } from '../../application/dtos/update-client.dto';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
+import { CreateClientDto } from "../../application/dtos/create-client.dto";
+import { UpdateClientDto } from "../../application/dtos/update-client.dto";
 
 @Injectable()
 export class PrismaClientsRepository {
@@ -12,14 +12,18 @@ export class PrismaClientsRepository {
       where: search
         ? {
             OR: [
-              { name: { contains: search, mode: 'insensitive' } },
+              { name: { contains: search, mode: "insensitive" } },
               { phone: { contains: search } },
-              { vehicles: { some: { plate: { contains: search, mode: 'insensitive' } } } },
+              {
+                vehicles: {
+                  some: { plate: { contains: search, mode: "insensitive" } },
+                },
+              },
             ],
           }
         : undefined,
       include: { vehicles: true, _count: { select: { orders: true } } },
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
     });
   }
 
@@ -28,7 +32,11 @@ export class PrismaClientsRepository {
       where: { id },
       include: {
         vehicles: true,
-        orders: { include: { service: true, vehicle: true }, orderBy: { createdAt: 'desc' }, take: 10 },
+        orders: {
+          include: { service: true, vehicle: true },
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        },
       },
     });
   }
@@ -47,8 +55,8 @@ export class PrismaClientsRepository {
 
   findLastOrderDate(clientId: string) {
     return this.prisma.serviceOrder.findFirst({
-      where: { clientId, status: { in: ['CONCLUIDO', 'PAGO'] } },
-      orderBy: { createdAt: 'desc' },
+      where: { clientId, status: { in: ["CONCLUIDO", "PAGO"] } },
+      orderBy: { createdAt: "desc" },
       select: { createdAt: true },
     });
   }

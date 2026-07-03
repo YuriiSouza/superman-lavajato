@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
-import { PrismaServiceOrdersRepository } from './infrastructure/repositories/prisma-service-orders.repository';
-import { ServiceOrdersController } from './presentation/controllers/service-orders.controller';
+import { Module } from "@nestjs/common";
+import { PrismaServiceOrdersRepository } from "./infrastructure/repositories/prisma-service-orders.repository";
+import { ServiceOrdersController } from "./presentation/controllers/service-orders.controller";
 
 @Module({
   providers: [PrismaServiceOrdersRepository],

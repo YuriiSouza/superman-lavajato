@@ -1,6 +1,6 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsOptional } from 'class-validator';
-import { AppointmentStatus } from '@prisma/client';
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { IsEnum, IsOptional } from "class-validator";
+import { AppointmentStatus } from "@prisma/client";
 
 export class UpdateAppointmentDto {
   @ApiPropertyOptional({ enum: AppointmentStatus })
