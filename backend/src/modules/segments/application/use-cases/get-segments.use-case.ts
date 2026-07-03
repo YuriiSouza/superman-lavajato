@@ -6,8 +6,8 @@ export class GetSegmentsUseCase {
   constructor(private readonly prisma: PrismaService) {}
 
   async execute() {
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const CHURN_THRESHOLD_DAYS = 30;
+    const VIP_RECENCY_DAYS = 7;
 
     const clients = await this.prisma.client.findMany({
       include: {
@@ -37,10 +37,10 @@ export class GetSegmentsUseCase {
 
       const enriched = { ...client, daysSinceLast, avgTicket: Math.round(avgTicket * 100) / 100 };
 
-      if (daysSinceLast > 30) { churn.push(enriched); continue; }
+      if (daysSinceLast > CHURN_THRESHOLD_DAYS) { churn.push(enriched); continue; }
       if (hasPremiumVehicle) premium.push(enriched);
       // VIP e regular não são mutuamente exclusivos com premium — um cliente SUV frequente entra nos dois
-      if (completedOrders.length >= 4 && daysSinceLast <= 7) vip.push(enriched);
+      if (completedOrders.length >= 4 && daysSinceLast <= VIP_RECENCY_DAYS) vip.push(enriched);
       else regular.push(enriched);
     }
 

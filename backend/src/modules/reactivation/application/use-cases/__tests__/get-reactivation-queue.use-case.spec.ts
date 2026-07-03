@@ -4,24 +4,20 @@ function daysAgo(n: number) {
   return new Date(Date.now() - n * 24 * 60 * 60 * 1000);
 }
 
-const prisma = { client: { findMany: jest.fn() } };
+function makeClient(id: string, lastOrderDaysAgo: number | null, vehicle?: { plate: string; model: string; color?: string }) {
+  return {
+    id,
+    name: id === 'c1' ? 'João Silva' : id === 'c2' ? 'Maria Santos' : 'Pedro Costa',
+    phone: `1199999900${id.slice(-1)}`,
+    vehicles: vehicle ? [{ plate: vehicle.plate, model: vehicle.model, color: vehicle.color ?? null }] : [],
+    orders: lastOrderDaysAgo !== null ? [{ createdAt: daysAgo(lastOrderDaysAgo), totalValue: 80 }] : [],
+    reactivationLogs: [],
+  };
+}
 
-const clientWithRecentOrder = {
-  id: 'c1', name: 'João Silva', phone: '11999990001',
-  vehicles: [{ plate: 'ABC1234', model: 'HB20', color: 'Prata' }],
-  orders: [{ createdAt: daysAgo(5), totalValue: 50 }],
-};
-
-const clientWithOldOrder = {
-  id: 'c2', name: 'Maria Santos', phone: '11999990002',
-  vehicles: [{ plate: 'XYZ9876', model: 'Corolla', color: 'Branco' }],
-  orders: [{ createdAt: daysAgo(45), totalValue: 80 }],
-};
-
-const clientWithNoOrder = {
-  id: 'c3', name: 'Pedro Costa', phone: '11999990003',
-  vehicles: [],
-  orders: [],
+const prisma = {
+  client: { findMany: jest.fn() },
+  setting: { findUnique: jest.fn().mockResolvedValue(null) },
 };
 
 describe('GetReactivationQueueUseCase', () => {
@@ -30,17 +26,17 @@ describe('GetReactivationQueueUseCase', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useCase = new GetReactivationQueueUseCase(prisma as any);
+    prisma.setting.findUnique.mockResolvedValue(null);
     prisma.client.findMany.mockResolvedValue([
-      clientWithRecentOrder,
-      clientWithOldOrder,
-      clientWithNoOrder,
+      makeClient('c1', 5, { plate: 'ABC1234', model: 'HB20', color: 'Prata' }),   // recente → fora
+      makeClient('c2', 45, { plate: 'XYZ9876', model: 'Corolla', color: 'Branco' }), // sumido → dentro
+      makeClient('c3', null),                                                         // sem visita → dentro
     ]);
   });
 
   it('should exclude clients with recent orders', async () => {
     const result = await useCase.execute(30);
-    const ids = result.queue.map((c) => c.id);
-    expect(ids).not.toContain('c1');
+    expect(result.queue.map((c) => c.id)).not.toContain('c1');
   });
 
   it('should include clients whose last order exceeds threshold', async () => {

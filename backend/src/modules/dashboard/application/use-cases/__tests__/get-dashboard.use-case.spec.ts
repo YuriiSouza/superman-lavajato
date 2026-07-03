@@ -1,7 +1,7 @@
 import { GetDashboardUseCase } from '../get-dashboard.use-case';
 
 const prisma = {
-  serviceOrder: { findMany: jest.fn() },
+  serviceOrder: { findMany: jest.fn(), count: jest.fn().mockResolvedValue(0) },
   client: { count: jest.fn() },
 };
 
@@ -15,6 +15,7 @@ describe('GetDashboardUseCase', () => {
 
   it('should return zero metrics when no orders today', async () => {
     prisma.serviceOrder.findMany.mockResolvedValue([]);
+    prisma.serviceOrder.count.mockResolvedValue(0);
     prisma.client.count.mockResolvedValue(0);
 
     const result = await useCase.execute();
@@ -30,9 +31,8 @@ describe('GetDashboardUseCase', () => {
       { totalValue: 50, paymentMethod: 'PIX' },
       { totalValue: 150, paymentMethod: 'DINHEIRO' },
     ];
-    prisma.serviceOrder.findMany
-      .mockResolvedValueOnce(orders)
-      .mockResolvedValueOnce(orders);
+    prisma.serviceOrder.findMany.mockResolvedValue(orders);
+    prisma.serviceOrder.count.mockResolvedValue(0);
     prisma.client.count.mockResolvedValue(10);
 
     const result = await useCase.execute();
@@ -48,9 +48,8 @@ describe('GetDashboardUseCase', () => {
       { totalValue: 50, paymentMethod: 'DINHEIRO' },
       { totalValue: 75, paymentMethod: 'PIX' },
     ];
-    prisma.serviceOrder.findMany
-      .mockResolvedValueOnce(orders)
-      .mockResolvedValueOnce(orders);
+    prisma.serviceOrder.findMany.mockResolvedValue(orders);
+    prisma.serviceOrder.count.mockResolvedValue(0);
     prisma.client.count.mockResolvedValue(5);
 
     const result = await useCase.execute();
@@ -59,13 +58,20 @@ describe('GetDashboardUseCase', () => {
     expect(result.today.byPayment['DINHEIRO']).toBe(50);
   });
 
-  it('should return client totals', async () => {
+  it('should return client totals and order queues', async () => {
     prisma.serviceOrder.findMany.mockResolvedValue([]);
-    prisma.client.count.mockResolvedValueOnce(20).mockResolvedValueOnce(3);
+    prisma.serviceOrder.count
+      .mockResolvedValueOnce(3)  // pendingCount
+      .mockResolvedValueOnce(2); // activeCount
+    prisma.client.count
+      .mockResolvedValueOnce(20)
+      .mockResolvedValueOnce(3);
 
     const result = await useCase.execute();
 
     expect(result.clients.total).toBe(20);
     expect(result.clients.churn).toBe(3);
+    expect(result.orders.pending).toBe(3);
+    expect(result.orders.active).toBe(2);
   });
 });

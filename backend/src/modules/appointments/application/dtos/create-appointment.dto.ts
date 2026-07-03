@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsDateString, IsMobilePhone, IsOptional, IsString, Matches } from 'class-validator';
+import { IsDateString, IsOptional, IsString, Matches } from 'class-validator';
 
 export class CreateAppointmentDto {
   @ApiProperty({ example: 'João Silva' })
