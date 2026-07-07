@@ -10,7 +10,10 @@ export type Service = {
 };
 
 export async function fetchPublicServices(): Promise<Service[]> {
-  const base = process.env.API_INTERNAL_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+  const base =
+    process.env.API_INTERNAL_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:3001";
   const res = await fetch(`${base}/services?activeOnly=true`, {
     next: { revalidate: 60 },
   });

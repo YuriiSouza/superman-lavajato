@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { CacheModule } from "@nestjs/cache-manager";
 import { PrismaModule } from "./infrastructure/prisma/prisma.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { ClientsModule } from "./modules/clients/clients.module";
@@ -20,6 +21,7 @@ import { BillsModule } from "./modules/bills/bills.module";
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    CacheModule.register({ isGlobal: true, ttl: 60_000 }),
     PrismaModule,
     AuthModule,
     ClientsModule,

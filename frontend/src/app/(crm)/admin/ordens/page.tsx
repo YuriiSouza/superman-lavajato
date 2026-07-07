@@ -1,84 +1,122 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { Plus, X } from 'lucide-react';
-import { crm } from '@/lib/crm/api';
-import NovaOSModal from '@/components/crm/NovaOSModal';
-import ReceberPagamentoModal from '@/components/crm/ReceberPagamentoModal';
+import { useEffect, useState, useCallback } from "react";
+import { Plus, X } from "lucide-react";
+import { crm } from "@/lib/crm/api";
+import NovaOSModal from "@/components/crm/NovaOSModal";
+import ReceberPagamentoModal from "@/components/crm/ReceberPagamentoModal";
 
-const STATUS_OPTIONS = ['PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDO', 'PAGO', 'CANCELADO'] as const;
+const STATUS_OPTIONS = [
+  "PENDENTE",
+  "EM_ANDAMENTO",
+  "CONCLUIDO",
+  "PAGO",
+  "CANCELADO",
+] as const;
 const STATUS_LABEL: Record<string, string> = {
-  PENDENTE: 'Aguardando', EM_ANDAMENTO: 'Em andamento', CONCLUIDO: 'Concluído',
-  PAGO: 'Pago', CANCELADO: 'Cancelado',
+  PENDENTE: "Aguardando",
+  EM_ANDAMENTO: "Em andamento",
+  CONCLUIDO: "Concluído",
+  PAGO: "Pago",
+  CANCELADO: "Cancelado",
 };
 const STATUS_COLOR: Record<string, string> = {
-  PENDENTE:     'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
-  EM_ANDAMENTO: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
-  CONCLUIDO:    'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
-  PAGO:         'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400',
-  CANCELADO:    'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400',
+  PENDENTE:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
+  EM_ANDAMENTO:
+    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
+  CONCLUIDO:
+    "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
+  PAGO: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
+  CANCELADO: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
 };
 const PAYMENT_LABEL: Record<string, string> = {
-  PIX: 'Pix', DINHEIRO: 'Dinheiro', CARTAO_CREDITO: 'Crédito', CARTAO_DEBITO: 'Débito',
+  PIX: "Pix",
+  DINHEIRO: "Dinheiro",
+  CARTAO_CREDITO: "Crédito",
+  CARTAO_DEBITO: "Débito",
 };
 
 const FILTER_TABS = [
-  { key: '', label: 'Todas' },
-  { key: 'PENDENTE', label: 'Aguardando' },
-  { key: 'EM_ANDAMENTO', label: 'Em andamento' },
-  { key: 'CONCLUIDO', label: 'Concluídas' },
-  { key: 'PAGO', label: 'Pagas' },
-  { key: 'CANCELADO', label: 'Canceladas' },
+  { key: "", label: "Todas" },
+  { key: "PENDENTE", label: "Aguardando" },
+  { key: "EM_ANDAMENTO", label: "Em andamento" },
+  { key: "CONCLUIDO", label: "Concluídas" },
+  { key: "PAGO", label: "Pagas" },
+  { key: "CANCELADO", label: "Canceladas" },
 ];
 
-const STORAGE_KEY = 'ordens_filters';
+const STORAGE_KEY = "ordens_filters";
 
-const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmt = (v: number) =>
+  `R$ ${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 function todayISO() {
-  return new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Sao_Paulo' });
+  return new Date().toLocaleDateString("sv-SE", {
+    timeZone: "America/Sao_Paulo",
+  });
 }
 
 function fmtDateBR(iso: string) {
-  const [y, m, d] = iso.split('-');
+  const [y, m, d] = iso.split("-");
   return `${d}/${m}/${y}`;
 }
 
 function paymentSummary(order: any): string {
   if (order.payments?.length) {
     return order.payments
-      .map((p: any) => `${PAYMENT_LABEL[p.method] ?? p.method} ${fmt(p.amount)}`)
-      .join(' + ');
+      .map(
+        (p: any) => `${PAYMENT_LABEL[p.method] ?? p.method} ${fmt(p.amount)}`,
+      )
+      .join(" + ");
   }
-  if (order.paymentMethod) return PAYMENT_LABEL[order.paymentMethod] ?? order.paymentMethod;
-  return '—';
+  if (order.paymentMethod)
+    return PAYMENT_LABEL[order.paymentMethod] ?? order.paymentMethod;
+  return "—";
 }
 
 function saveFilters(status: string, date: string) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ status, date })); } catch {}
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ status, date }));
+  } catch {}
 }
 
 export default function OrdensPage() {
-  const [orders, setOrders]   = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter]   = useState(() => {
-    try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r).status : ''; } catch { return ''; }
+  const [filter, setFilter] = useState(() => {
+    try {
+      const r = localStorage.getItem(STORAGE_KEY);
+      return r ? JSON.parse(r).status : "";
+    } catch {
+      return "";
+    }
   });
-  const [date, setDate]       = useState(() => {
-    try { const r = localStorage.getItem(STORAGE_KEY); return r ? JSON.parse(r).date : ''; } catch { return ''; }
+  const [date, setDate] = useState(() => {
+    try {
+      const r = localStorage.getItem(STORAGE_KEY);
+      return r ? JSON.parse(r).date : "";
+    } catch {
+      return "";
+    }
   });
-  const [modal, setModal]     = useState(false);
-  const [paying, setPaying]   = useState<any | null>(null);
+  const [modal, setModal] = useState(false);
+  const [paying, setPaying] = useState<any | null>(null);
 
   const loadOrders = useCallback((status: string, dateVal: string) => {
     setLoading(true);
     const params: any = {};
     if (status) params.status = status;
     if (dateVal) params.date = dateVal;
-    crm.orders.list(params).then(setOrders).finally(() => setLoading(false));
+    crm.orders
+      .list(params)
+      .then(setOrders)
+      .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => { loadOrders(filter, date); }, []);
+  useEffect(() => {
+    loadOrders(filter, date);
+  }, []);
 
   function handleFilter(newStatus: string) {
     setFilter(newStatus);
@@ -93,22 +131,25 @@ export default function OrdensPage() {
   }
 
   function clearDate() {
-    setDate('');
-    saveFilters(filter, '');
-    loadOrders(filter, '');
+    setDate("");
+    saveFilters(filter, "");
+    loadOrders(filter, "");
   }
 
   function handleStatusChange(order: any, newStatus: string) {
-    if (newStatus === 'PAGO') {
-      setPaying({ ...order, nextStatus: 'PAGO' });
+    if (newStatus === "PAGO") {
+      setPaying({ ...order, nextStatus: "PAGO" });
     } else {
-      crm.orders.update(order.id, { status: newStatus })
+      crm.orders
+        .update(order.id, { status: newStatus })
         .then(() => loadOrders(filter, date));
     }
   }
 
-  async function handlePaymentConfirm(payments: { method: string; amount: number }[]) {
-    await crm.orders.update(paying.id, { status: 'PAGO', payments });
+  async function handlePaymentConfirm(
+    payments: { method: string; amount: number }[],
+  ) {
+    await crm.orders.update(paying.id, { status: "PAGO", payments });
     setPaying(null);
     loadOrders(filter, date);
   }
@@ -117,15 +158,17 @@ export default function OrdensPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-4 md:space-y-5 overflow-x-hidden">
-
       {/* cabeçalho */}
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Ordens de serviço</h1>
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          Ordens de serviço
+        </h1>
         <button
           onClick={() => setModal(true)}
           className="flex items-center gap-2 bg-blue-600 text-white text-sm px-3 py-2 md:px-4 rounded-lg hover:bg-blue-700 transition-colors"
         >
-          <Plus size={16} /> <span className="hidden sm:inline">Nova OS</span><span className="sm:hidden">Nova</span>
+          <Plus size={16} /> <span className="hidden sm:inline">Nova OS</span>
+          <span className="sm:hidden">Nova</span>
         </button>
       </div>
 
@@ -140,8 +183,8 @@ export default function OrdensPage() {
                 onClick={() => handleFilter(t.key)}
                 className={`text-xs px-3 py-1.5 rounded-md transition-colors whitespace-nowrap ${
                   filter === t.key
-                    ? 'bg-white dark:bg-gray-700 font-medium shadow-sm text-gray-900 dark:text-gray-100'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                    ? "bg-white dark:bg-gray-700 font-medium shadow-sm text-gray-900 dark:text-gray-100"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                 }`}
               >
                 {t.label}
@@ -161,11 +204,18 @@ export default function OrdensPage() {
           {date && (
             <>
               {isToday ? (
-                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">hoje</span>
+                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  hoje
+                </span>
               ) : (
-                <span className="text-xs text-gray-500 dark:text-gray-400">{fmtDateBR(date)}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {fmtDateBR(date)}
+                </span>
               )}
-              <button onClick={clearDate} className="p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+              <button
+                onClick={clearDate}
+                className="p-0.5 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
                 <X size={13} />
               </button>
             </>
@@ -178,7 +228,10 @@ export default function OrdensPage() {
         {loading ? (
           <div className="p-4 space-y-3">
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              <div
+                key={i}
+                className="h-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
+              />
             ))}
           </div>
         ) : orders.length === 0 ? (
@@ -192,44 +245,101 @@ export default function OrdensPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-gray-700">
-                    {['Veículo', 'Cliente', 'Serviço', 'Pagamento', 'Valor', 'Status'].map((h) => (
-                      <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">{h}</th>
+                    {[
+                      "Veículo",
+                      "Cliente",
+                      "Serviço",
+                      "Pagamento",
+                      "Valor",
+                      "Status",
+                    ].map((h) => (
+                      <th
+                        key={h}
+                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+                      >
+                        {h}
+                      </th>
                     ))}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {orders.map((o) => (
-                    <tr key={o.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr
+                      key={o.id}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                    >
                       <td className="px-4 py-3">
                         {o.vehicle ? (
                           <>
-                            <span className="font-mono text-xs text-gray-600 dark:text-gray-300">{o.vehicle.plate}</span>
-                            {o.vehicle.model && <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">· {o.vehicle.model}</span>}
+                            <span className="font-mono text-xs text-gray-600 dark:text-gray-300">
+                              {o.vehicle.plate}
+                            </span>
+                            {o.vehicle.model && (
+                              <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">
+                                · {o.vehicle.model}
+                              </span>
+                            )}
                           </>
                         ) : (
-                          <span className="text-xs text-gray-400 dark:text-gray-500 italic">{o.customerDescription ?? '—'}</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500 italic">
+                            {o.customerDescription ?? "—"}
+                          </span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-gray-900 dark:text-gray-100">
                         <div className="flex items-center gap-1.5">
-                          {o.client?.name ?? <span className="text-gray-400 dark:text-gray-500 text-xs italic">—</span>}
+                          {o.client?.name ?? (
+                            <span className="text-gray-400 dark:text-gray-500 text-xs italic">
+                              —
+                            </span>
+                          )}
                           {o.client?.phone && (
-                            <a href={`https://wa.me/55${o.client.phone.replace(/\D/g,'')}`} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:text-green-600" title="WhatsApp">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                            <a
+                              href={`https://wa.me/55${o.client.phone.replace(/\D/g, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-green-500 hover:text-green-600"
+                              title="WhatsApp"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="13"
+                                height="13"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+                              </svg>
                             </a>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{o.service?.name}</td>
-                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">{paymentSummary(o)}</td>
-                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">{fmt(o.totalValue)}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300">
+                        {o.service?.name}
+                      </td>
+                      <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">
+                        {paymentSummary(o)}
+                      </td>
+                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                        {fmt(o.totalValue)}
+                      </td>
                       <td className="px-4 py-3">
                         <select
                           value={o.status}
-                          onChange={(e) => handleStatusChange(o, e.target.value)}
+                          onChange={(e) =>
+                            handleStatusChange(o, e.target.value)
+                          }
                           className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-blue-500 ${STATUS_COLOR[o.status]} bg-transparent`}
                         >
-                          {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+                          {STATUS_OPTIONS.map((s) => (
+                            <option key={s} value={s}>
+                              {STATUS_LABEL[s]}
+                            </option>
+                          ))}
                         </select>
                       </td>
                     </tr>
@@ -245,25 +355,37 @@ export default function OrdensPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                        {o.client?.name ?? o.customerDescription ?? '—'}
+                        {o.client?.name ?? o.customerDescription ?? "—"}
                       </p>
                       <p className="text-xs text-gray-400 dark:text-gray-500">
                         {o.vehicle ? (
-                          <><span className="font-mono">{o.vehicle.plate}</span>{o.vehicle.model && <> · {o.vehicle.model}</>}{' · '}</>
+                          <>
+                            <span className="font-mono">{o.vehicle.plate}</span>
+                            {o.vehicle.model && <> · {o.vehicle.model}</>}
+                            {" · "}
+                          </>
                         ) : null}
                         {o.service?.name}
                       </p>
                     </div>
-                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 shrink-0">{fmt(o.totalValue)}</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 shrink-0">
+                      {fmt(o.totalValue)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-xs text-gray-400 dark:text-gray-500">{paymentSummary(o)}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                      {paymentSummary(o)}
+                    </span>
                     <select
                       value={o.status}
                       onChange={(e) => handleStatusChange(o, e.target.value)}
                       className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-blue-500 ${STATUS_COLOR[o.status]} bg-transparent`}
                     >
-                      {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+                      {STATUS_OPTIONS.map((s) => (
+                        <option key={s} value={s}>
+                          {STATUS_LABEL[s]}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -282,7 +404,9 @@ export default function OrdensPage() {
       <ReceberPagamentoModal
         open={!!paying}
         totalValue={paying ? Number(paying.totalValue) : 0}
-        clientName={paying ? `${paying.client?.name} — ${paying.vehicle?.plate}` : ''}
+        clientName={
+          paying ? `${paying.client?.name} — ${paying.vehicle?.plate}` : ""
+        }
         onConfirm={handlePaymentConfirm}
         onClose={() => setPaying(null)}
       />

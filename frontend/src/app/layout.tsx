@@ -10,7 +10,7 @@ const inter = Inter({
   display: "swap",
 });
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
   const site = await fetchSiteSettings();
@@ -21,7 +21,13 @@ export async function generateMetadata(): Promise<Metadata> {
       template: `%s | ${site.name}`,
     },
     description: site.description,
-    keywords: ["lava a jato", "lavagem de carro", "enceramento", "detalhamento automotivo", site.name],
+    keywords: [
+      "lava a jato",
+      "lavagem de carro",
+      "enceramento",
+      "detalhamento automotivo",
+      site.name,
+    ],
     openGraph: {
       title: `${site.name} — ${site.tagline}`,
       description: site.description,
@@ -29,7 +35,11 @@ export async function generateMetadata(): Promise<Metadata> {
       locale: "pt_BR",
       siteName: site.name,
     },
-    twitter: { card: "summary_large_image", title: site.name, description: site.description },
+    twitter: {
+      card: "summary_large_image",
+      title: site.name,
+      description: site.description,
+    },
   };
 }
 
@@ -39,7 +49,9 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="pt-BR" className={`${inter.variable} h-full`}>
       <body className="font-sans antialiased h-full">

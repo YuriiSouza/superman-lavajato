@@ -1,11 +1,19 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
 import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
 
 @Injectable()
 export class GetSegmentsUseCase {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
 
   async execute() {
+    const cached = await this.cache.get("segments");
+    if (cached) return cached;
+
     const CHURN_THRESHOLD_DAYS = 30;
     const VIP_RECENCY_DAYS = 7;
 
@@ -61,7 +69,7 @@ export class GetSegmentsUseCase {
       else regular.push(enriched);
     }
 
-    return {
+    const result = {
       vip: { label: "VIP — Alta frequência", count: vip.length, clients: vip },
       regular: { label: "Regulares", count: regular.length, clients: regular },
       churn: {
@@ -75,5 +83,9 @@ export class GetSegmentsUseCase {
         clients: premium,
       },
     };
+
+    // Cache por 2min — segmentação não muda a cada requisição
+    await this.cache.set("segments", result, 120_000);
+    return result;
   }
 }

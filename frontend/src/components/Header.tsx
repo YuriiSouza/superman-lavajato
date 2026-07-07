@@ -57,7 +57,6 @@ export function Header() {
           ))}
         </nav>
 
-
         {/* Botão hambúrguer (mobile) */}
         <button
           type="button"

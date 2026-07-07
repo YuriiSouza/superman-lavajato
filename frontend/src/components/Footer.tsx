@@ -57,10 +57,26 @@ export function Footer({ site }: { site: SiteSettings }) {
             Navegação
           </h3>
           <ul className="mt-4 space-y-2.5 text-sm text-zinc-400">
-            <li><Link href="/#servicos" className="hover:text-kawasaki-400">Serviços</Link></li>
-            <li><Link href="/#sobre" className="hover:text-kawasaki-400">Sobre nós</Link></li>
-            <li><Link href="/#avaliacoes" className="hover:text-kawasaki-400">Avaliações</Link></li>
-            <li><Link href="/servicos" className="hover:text-kawasaki-400">Preços e pacotes</Link></li>
+            <li>
+              <Link href="/#servicos" className="hover:text-kawasaki-400">
+                Serviços
+              </Link>
+            </li>
+            <li>
+              <Link href="/#sobre" className="hover:text-kawasaki-400">
+                Sobre nós
+              </Link>
+            </li>
+            <li>
+              <Link href="/#avaliacoes" className="hover:text-kawasaki-400">
+                Avaliações
+              </Link>
+            </li>
+            <li>
+              <Link href="/servicos" className="hover:text-kawasaki-400">
+                Preços e pacotes
+              </Link>
+            </li>
           </ul>
         </div>
 
@@ -81,7 +97,10 @@ export function Footer({ site }: { site: SiteSettings }) {
             </li>
             <li className="flex items-center gap-2.5">
               <MailIcon className="h-5 w-5 shrink-0 text-kawasaki-500" />
-              <a href={`mailto:${site.email}`} className="hover:text-kawasaki-400">
+              <a
+                href={`mailto:${site.email}`}
+                className="hover:text-kawasaki-400"
+              >
                 {site.email}
               </a>
             </li>

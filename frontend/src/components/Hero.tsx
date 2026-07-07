@@ -38,9 +38,9 @@ export async function Hero() {
         </h1>
 
         <p className="mt-6 max-w-xl text-lg leading-relaxed text-zinc-300">
-          No {site.name} unimos força, rapidez e um acabamento de
-          showroom. Lavagem simples, completa, enceramento e detalhamento — tudo
-          com qualidade premium.
+          No {site.name} unimos força, rapidez e um acabamento de showroom.
+          Lavagem simples, completa, enceramento e detalhamento — tudo com
+          qualidade premium.
         </p>
 
         <div className="mt-9 flex flex-col gap-3 sm:flex-row">

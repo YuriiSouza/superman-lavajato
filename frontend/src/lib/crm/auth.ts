@@ -1,11 +1,11 @@
-import type { NextAuthOptions } from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
-import axios from 'axios';
+import type { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import axios from "axios";
 
 async function refreshAccessToken(token: any) {
   // Sem refresh token armazenado (sessão antiga) → forçar novo login
   if (!token.refreshToken) {
-    return { ...token, error: 'RefreshAccessTokenError' };
+    return { ...token, error: "RefreshAccessTokenError" };
   }
 
   try {
@@ -25,7 +25,8 @@ async function refreshAccessToken(token: any) {
     };
   } catch (err: any) {
     // Erro de rede / timeout (backend hibernando) → mantém sessão, tenta de novo na próxima request
-    const isAuthError = err?.response?.status === 401 || err?.response?.status === 403;
+    const isAuthError =
+      err?.response?.status === 401 || err?.response?.status === 403;
     if (!isAuthError) {
       return {
         ...token,
@@ -34,17 +35,17 @@ async function refreshAccessToken(token: any) {
       };
     }
     // 401/403 real → refresh token inválido ou expirado → deslogar
-    return { ...token, error: 'RefreshAccessTokenError' };
+    return { ...token, error: "RefreshAccessTokenError" };
   }
 }
 
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
-      name: 'credentials',
+      name: "credentials",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Senha', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Senha", type: "password" },
       },
       async authorize(credentials) {
         try {
@@ -93,6 +94,6 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-  pages: { signIn: '/login' },
+  pages: { signIn: "/login" },
   secret: process.env.NEXTAUTH_SECRET,
 };

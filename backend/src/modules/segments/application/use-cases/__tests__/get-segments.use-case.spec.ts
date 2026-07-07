@@ -1,5 +1,10 @@
 import { GetSegmentsUseCase } from "../get-segments.use-case";
 
+const cache = {
+  get: jest.fn().mockResolvedValue(null),
+  set: jest.fn().mockResolvedValue(undefined),
+};
+
 const now = Date.now();
 
 function daysAgo(n: number) {
@@ -36,12 +41,13 @@ describe("GetSegmentsUseCase", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useCase = new GetSegmentsUseCase(prisma as any);
+    cache.get.mockResolvedValue(null);
+    useCase = new GetSegmentsUseCase(prisma as any, cache as any);
   });
 
   it("should classify client with no orders as churn", async () => {
     prisma.client.findMany.mockResolvedValue([makeClient("1", [])]);
-    const result = await useCase.execute();
+    const result = (await useCase.execute()) as any;
     expect(result.churn.clients).toHaveLength(1);
     expect(result.vip.clients).toHaveLength(0);
   });
@@ -49,7 +55,7 @@ describe("GetSegmentsUseCase", () => {
   it("should classify client last seen 5 days ago with 5+ orders as VIP", async () => {
     const orders = [1, 5, 10, 20, 25].map((d) => makeOrder(d));
     prisma.client.findMany.mockResolvedValue([makeClient("2", orders)]);
-    const result = await useCase.execute();
+    const result = (await useCase.execute()) as any;
     expect(result.vip.clients).toHaveLength(1);
   });
 
@@ -57,7 +63,7 @@ describe("GetSegmentsUseCase", () => {
     prisma.client.findMany.mockResolvedValue([
       makeClient("3", [makeOrder(35)]),
     ]);
-    const result = await useCase.execute();
+    const result = (await useCase.execute()) as any;
     expect(result.churn.clients).toHaveLength(1);
   });
 
@@ -66,7 +72,7 @@ describe("GetSegmentsUseCase", () => {
     prisma.client.findMany.mockResolvedValue([
       makeClient("4", orders, ["SUV"]),
     ]);
-    const result = await useCase.execute();
+    const result = (await useCase.execute()) as any;
     expect(result.premium.clients).toHaveLength(1);
   });
 
@@ -75,7 +81,7 @@ describe("GetSegmentsUseCase", () => {
     prisma.client.findMany.mockResolvedValue([
       makeClient("5", orders, ["PICKUP"]),
     ]);
-    const result = await useCase.execute();
+    const result = (await useCase.execute()) as any;
     expect(result.premium.clients).toHaveLength(1);
   });
 });

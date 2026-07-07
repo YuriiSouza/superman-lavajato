@@ -21,7 +21,10 @@ const DIFFERENTIALS = [
 
 export function About() {
   return (
-    <section id="sobre" className="scroll-mt-24 border-y border-white/10 bg-ink-900 py-20 sm:py-28">
+    <section
+      id="sobre"
+      className="scroll-mt-24 border-y border-white/10 bg-ink-900 py-20 sm:py-28"
+    >
       <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2">
         <div className="relative">
           <div className="grid grid-cols-2 gap-3">
@@ -83,14 +86,16 @@ export function About() {
           </div>
 
           <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-300">
-            {["Sem fila de espera", "Pagamento facilitado", "Garantia de satisfação"].map(
-              (item) => (
-                <li key={item} className="flex items-center gap-2">
-                  <CheckIcon className="h-4 w-4 text-kawasaki-500" />
-                  {item}
-                </li>
-              ),
-            )}
+            {[
+              "Sem fila de espera",
+              "Pagamento facilitado",
+              "Garantia de satisfação",
+            ].map((item) => (
+              <li key={item} className="flex items-center gap-2">
+                <CheckIcon className="h-4 w-4 text-kawasaki-500" />
+                {item}
+              </li>
+            ))}
           </ul>
         </div>
       </div>
