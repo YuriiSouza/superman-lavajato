@@ -28,10 +28,20 @@ export class ClientsController {
   constructor(private readonly repo: PrismaClientsRepository) {}
 
   @Get()
-  @ApiOperation({ summary: "Listar clientes" })
+  @ApiOperation({ summary: "Listar clientes com paginação" })
   @ApiQuery({ name: "search", required: false })
-  findAll(@Query("search") search?: string) {
-    return this.repo.findAll(search);
+  @ApiQuery({ name: "limit", required: false })
+  @ApiQuery({ name: "offset", required: false })
+  findAll(
+    @Query("search") search?: string,
+    @Query("limit") limit?: string,
+    @Query("offset") offset?: string,
+  ) {
+    return this.repo.findAll(
+      search,
+      limit ? parseInt(limit, 10) : 50,
+      offset ? parseInt(offset, 10) : 0,
+    );
   }
 
   @Get(":id")

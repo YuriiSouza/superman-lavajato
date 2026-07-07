@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Menu } from 'lucide-react';
-import Sidebar from './Sidebar';
+import { useState, useEffect } from "react";
+import { Menu } from "lucide-react";
+import Sidebar from "./Sidebar";
 
 export default function CrmShell({ children }: { children: React.ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -11,8 +11,8 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
   useEffect(() => {
@@ -22,14 +22,15 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
   // Mantém o backend (Render free tier) acordado enquanto o app está aberto
   useEffect(() => {
     const ping = () =>
-      fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`, { method: 'GET' }).catch(() => {});
+      fetch(`${process.env.NEXT_PUBLIC_API_URL}/health`, {
+        method: "GET",
+      }).catch(() => {});
     const id = setInterval(ping, 10 * 60 * 1000); // a cada 10 minutos
     return () => clearInterval(id);
   }, []);
 
   return (
     <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
-
       {/* backdrop mobile */}
       {drawerOpen && isMobile && (
         <div
@@ -42,9 +43,10 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
       <div
         className={`
           h-full flex-shrink-0
-          ${isMobile
-            ? `fixed inset-y-0 left-0 z-50 transition-transform duration-200 ${drawerOpen ? 'translate-x-0' : '-translate-x-full'}`
-            : 'relative'
+          ${
+            isMobile
+              ? `fixed inset-y-0 left-0 z-50 transition-transform duration-200 ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`
+              : "relative"
           }
         `}
       >
@@ -62,11 +64,15 @@ export default function CrmShell({ children }: { children: React.ReactNode }) {
             >
               <Menu size={20} />
             </button>
-            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Superman CRM</p>
+            <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+              Superman CRM
+            </p>
           </header>
         )}
 
-        <main className="flex-1 overflow-y-auto overflow-x-hidden">{children}</main>
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          {children}
+        </main>
       </div>
     </div>
   );

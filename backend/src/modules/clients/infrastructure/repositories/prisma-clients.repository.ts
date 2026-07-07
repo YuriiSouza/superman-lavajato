@@ -7,24 +7,35 @@ import { UpdateClientDto } from "../../application/dtos/update-client.dto";
 export class PrismaClientsRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  findAll(search?: string) {
-    return this.prisma.client.findMany({
-      where: search
-        ? {
-            OR: [
-              { name: { contains: search, mode: "insensitive" } },
-              { phone: { contains: search } },
-              {
-                vehicles: {
-                  some: { plate: { contains: search, mode: "insensitive" } },
+  async findAll(search?: string, limit = 50, offset = 0) {
+    const where = search
+      ? {
+          OR: [
+            { name: { contains: search, mode: "insensitive" as const } },
+            { phone: { contains: search } },
+            {
+              vehicles: {
+                some: {
+                  plate: { contains: search, mode: "insensitive" as const },
                 },
               },
-            ],
-          }
-        : undefined,
-      include: { vehicles: true, _count: { select: { orders: true } } },
-      orderBy: { name: "asc" },
-    });
+            },
+          ],
+        }
+      : undefined;
+
+    const [data, total] = await Promise.all([
+      this.prisma.client.findMany({
+        where,
+        include: { vehicles: true, _count: { select: { orders: true } } },
+        orderBy: { name: "asc" },
+        take: limit,
+        skip: offset,
+      }),
+      this.prisma.client.count({ where }),
+    ]);
+
+    return { data, total, limit, offset };
   }
 
   findOne(id: string) {

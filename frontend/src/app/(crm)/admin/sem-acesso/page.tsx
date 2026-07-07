@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { ShieldOff } from 'lucide-react';
+import { useRouter } from "next/navigation";
+import { ShieldOff } from "lucide-react";
 
 export default function SemAcessoPage() {
   const router = useRouter();
@@ -10,7 +10,9 @@ export default function SemAcessoPage() {
       <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
         <ShieldOff size={24} className="text-red-500" />
       </div>
-      <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Sem permissão</h1>
+      <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+        Sem permissão
+      </h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs">
         Seu perfil não tem acesso a esta página. Fale com um administrador.
       </p>

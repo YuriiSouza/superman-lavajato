@@ -5,12 +5,19 @@ const prisma = {
   client: { count: jest.fn() },
 };
 
+// Mock de cache em memória — nunca retorna valor cacheado nos testes
+const cache = {
+  get: jest.fn().mockResolvedValue(null),
+  set: jest.fn().mockResolvedValue(undefined),
+};
+
 describe("GetDashboardUseCase", () => {
   let useCase: GetDashboardUseCase;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useCase = new GetDashboardUseCase(prisma as any);
+    cache.get.mockResolvedValue(null); // garante que nunca usa cache nos testes
+    useCase = new GetDashboardUseCase(prisma as any, cache as any);
   });
 
   it("should return zero metrics when no orders today", async () => {
@@ -18,7 +25,7 @@ describe("GetDashboardUseCase", () => {
     prisma.serviceOrder.count.mockResolvedValue(0);
     prisma.client.count.mockResolvedValue(0);
 
-    const result = await useCase.execute();
+    const result = (await useCase.execute()) as any;
 
     expect(result.today.ordersCount).toBe(0);
     expect(result.today.revenue).toBe(0);
@@ -35,7 +42,7 @@ describe("GetDashboardUseCase", () => {
     prisma.serviceOrder.count.mockResolvedValue(0);
     prisma.client.count.mockResolvedValue(10);
 
-    const result = await useCase.execute();
+    const result = (await useCase.execute()) as any;
 
     expect(result.today.ordersCount).toBe(3);
     expect(result.today.revenue).toBe(300);
@@ -52,7 +59,7 @@ describe("GetDashboardUseCase", () => {
     prisma.serviceOrder.count.mockResolvedValue(0);
     prisma.client.count.mockResolvedValue(5);
 
-    const result = await useCase.execute();
+    const result = (await useCase.execute()) as any;
 
     expect(result.today.byPayment["PIX"]).toBe(175);
     expect(result.today.byPayment["DINHEIRO"]).toBe(50);
@@ -65,7 +72,7 @@ describe("GetDashboardUseCase", () => {
       .mockResolvedValueOnce(2); // activeCount
     prisma.client.count.mockResolvedValueOnce(20).mockResolvedValueOnce(3);
 
-    const result = await useCase.execute();
+    const result = (await useCase.execute()) as any;
 
     expect(result.clients.total).toBe(20);
     expect(result.clients.churn).toBe(3);

@@ -3,7 +3,12 @@ import { SectionHeading } from "@/components/SectionHeading";
 import { BookingForm } from "@/components/BookingForm";
 import { fetchPublicServices, ADDONS } from "@/lib/services";
 import { fetchSiteSettings, whatsappLink } from "@/lib/site";
-import { CheckIcon, ClockIcon, WhatsAppIcon, BoltIcon } from "@/components/icons";
+import {
+  CheckIcon,
+  ClockIcon,
+  WhatsAppIcon,
+  BoltIcon,
+} from "@/components/icons";
 
 export const metadata: Metadata = {
   title: "Serviços e Preços",
@@ -24,7 +29,10 @@ function formatDuration(minutes: number): string {
 }
 
 export default async function ServicosPage() {
-  const [services, site] = await Promise.all([fetchPublicServices(), fetchSiteSettings()]);
+  const [services, site] = await Promise.all([
+    fetchPublicServices(),
+    fetchSiteSettings(),
+  ]);
 
   return (
     <>
@@ -74,7 +82,9 @@ export default async function ServicosPage() {
                   )}
                   <h2 className="text-lg font-bold text-white">{s.name}</h2>
                   {s.description && (
-                    <p className="mt-1.5 text-sm text-zinc-400">{s.description}</p>
+                    <p className="mt-1.5 text-sm text-zinc-400">
+                      {s.description}
+                    </p>
                   )}
 
                   <div className="mt-5 flex items-end gap-1">
@@ -90,7 +100,10 @@ export default async function ServicosPage() {
                   {s.features.length > 0 && (
                     <ul className="mt-6 flex-1 space-y-3 border-t border-white/10 pt-6">
                       {s.features.map((f) => (
-                        <li key={f} className="flex items-start gap-2.5 text-sm text-zinc-300">
+                        <li
+                          key={f}
+                          className="flex items-start gap-2.5 text-sm text-zinc-300"
+                        >
                           <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-kawasaki-500" />
                           {f}
                         </li>
@@ -120,8 +133,9 @@ export default async function ServicosPage() {
           )}
 
           <p className="mt-6 text-center text-xs text-zinc-500">
-            * Valores de referência para veículos de pequeno e médio porte. SUVs,
-            caminhonetes e carros muito sujos podem ter acréscimo. Consulte-nos.
+            * Valores de referência para veículos de pequeno e médio porte.
+            SUVs, caminhonetes e carros muito sujos podem ter acréscimo.
+            Consulte-nos.
           </p>
         </div>
       </section>

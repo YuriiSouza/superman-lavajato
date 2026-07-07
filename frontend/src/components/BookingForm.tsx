@@ -7,8 +7,7 @@ import { WhatsAppIcon } from "./icons";
 const inputClass =
   "w-full rounded-xl border border-white/10 bg-ink-950 px-4 py-3 text-sm text-white placeholder:text-zinc-500 transition-colors focus:border-kawasaki-500 focus:outline-none";
 
-const labelClass =
-  "mb-1.5 block text-sm font-medium text-zinc-300";
+const labelClass = "mb-1.5 block text-sm font-medium text-zinc-300";
 
 function formatPrice(price: string | number): string {
   return `R$ ${Number(price).toLocaleString("pt-BR", { minimumFractionDigits: 0 })}`;
@@ -20,7 +19,8 @@ interface Props {
 }
 
 export function BookingForm({ services, whatsappPhone }: Props) {
-  const defaultService = services.find((s) => s.highlight)?.name ?? services[0]?.name ?? "";
+  const defaultService =
+    services.find((s) => s.highlight)?.name ?? services[0]?.name ?? "";
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [service, setService] = useState(defaultService);

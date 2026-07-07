@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { crm } from '@/lib/crm/api';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useEffect, useState, useCallback } from "react";
+import { crm } from "@/lib/crm/api";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-type AppointmentStatus = 'PENDENTE' | 'CONFIRMADO' | 'CANCELADO' | 'CONCLUIDO';
+type AppointmentStatus = "PENDENTE" | "CONFIRMADO" | "CANCELADO" | "CONCLUIDO";
 
 type Appointment = {
   id: string;
@@ -20,22 +20,22 @@ type Appointment = {
 };
 
 const STATUS_LABELS: Record<AppointmentStatus, string> = {
-  PENDENTE: 'Pendente',
-  CONFIRMADO: 'Confirmado',
-  CANCELADO: 'Cancelado',
-  CONCLUIDO: 'Concluído',
+  PENDENTE: "Pendente",
+  CONFIRMADO: "Confirmado",
+  CANCELADO: "Cancelado",
+  CONCLUIDO: "Concluído",
 };
 
 const STATUS_COLORS: Record<AppointmentStatus, string> = {
-  PENDENTE: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30',
-  CONFIRMADO: 'bg-green-500/10 text-green-400 border-green-500/30',
-  CANCELADO: 'bg-red-500/10 text-red-400 border-red-500/30',
-  CONCLUIDO: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/30',
+  PENDENTE: "bg-yellow-500/10 text-yellow-400 border-yellow-500/30",
+  CONFIRMADO: "bg-green-500/10 text-green-400 border-green-500/30",
+  CANCELADO: "bg-red-500/10 text-red-400 border-red-500/30",
+  CONCLUIDO: "bg-zinc-500/10 text-zinc-400 border-zinc-500/30",
 };
 
 const STATUS_NEXT: Record<AppointmentStatus, AppointmentStatus | null> = {
-  PENDENTE: 'CONFIRMADO',
-  CONFIRMADO: 'CONCLUIDO',
+  PENDENTE: "CONFIRMADO",
+  CONFIRMADO: "CONCLUIDO",
   CANCELADO: null,
   CONCLUIDO: null,
 };
@@ -45,11 +45,11 @@ function toISO(date: Date) {
 }
 
 function fmtDate(isoDate: string) {
-  return new Date(isoDate + 'T12:00:00').toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
+  return new Date(isoDate + "T12:00:00").toLocaleDateString("pt-BR", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
   });
 }
 
@@ -78,10 +78,12 @@ export default function AgendaPage() {
     }
   }, []);
 
-  useEffect(() => { load(date); }, [date, load]);
+  useEffect(() => {
+    load(date);
+  }, [date, load]);
 
   function shiftDay(delta: number) {
-    const d = new Date(date + 'T12:00:00');
+    const d = new Date(date + "T12:00:00");
     d.setDate(d.getDate() + delta);
     setDate(toISO(d));
   }
@@ -103,12 +105,12 @@ export default function AgendaPage() {
   }
 
   async function cancel(appt: Appointment) {
-    if (appt.status === 'CANCELADO') return;
+    if (appt.status === "CANCELADO") return;
     setUpdating(appt.id);
     try {
-      await crm.appointments.updateStatus(appt.id, 'CANCELADO');
+      await crm.appointments.updateStatus(appt.id, "CANCELADO");
       setAppointments((prev) =>
-        prev.map((a) => (a.id === appt.id ? { ...a, status: 'CANCELADO' } : a)),
+        prev.map((a) => (a.id === appt.id ? { ...a, status: "CANCELADO" } : a)),
       );
     } catch {
       // silently fail
@@ -118,17 +120,20 @@ export default function AgendaPage() {
   }
 
   const isToday = date === toISO(new Date());
-  const pending = appointments.filter((a) => a.status === 'PENDENTE').length;
-  const confirmed = appointments.filter((a) => a.status === 'CONFIRMADO').length;
+  const pending = appointments.filter((a) => a.status === "PENDENTE").length;
+  const confirmed = appointments.filter(
+    (a) => a.status === "CONFIRMADO",
+  ).length;
 
   return (
     <div className="min-h-screen bg-ink-950 pb-20">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-white">Agenda</h1>
-          <p className="mt-1 text-sm text-zinc-400">Gerencie os agendamentos do dia</p>
+          <p className="mt-1 text-sm text-zinc-400">
+            Gerencie os agendamentos do dia
+          </p>
         </div>
 
         {/* Date nav */}
@@ -141,7 +146,9 @@ export default function AgendaPage() {
           </button>
 
           <div className="text-center">
-            <p className="text-sm font-semibold text-white capitalize">{fmtDate(date)}</p>
+            <p className="text-sm font-semibold text-white capitalize">
+              {fmtDate(date)}
+            </p>
             {isToday && (
               <span className="mt-0.5 inline-block rounded-full bg-kawasaki-500/20 px-2 py-0.5 text-xs font-medium text-kawasaki-400">
                 Hoje
@@ -161,16 +168,17 @@ export default function AgendaPage() {
         {!loading && appointments.length > 0 && (
           <div className="mb-6 flex flex-wrap gap-3">
             <span className="rounded-full border border-white/10 bg-ink-900 px-3 py-1.5 text-xs font-medium text-zinc-300">
-              {appointments.length} agendamento{appointments.length !== 1 ? 's' : ''}
+              {appointments.length} agendamento
+              {appointments.length !== 1 ? "s" : ""}
             </span>
             {pending > 0 && (
               <span className="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-xs font-medium text-yellow-400">
-                {pending} pendente{pending !== 1 ? 's' : ''}
+                {pending} pendente{pending !== 1 ? "s" : ""}
               </span>
             )}
             {confirmed > 0 && (
               <span className="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1.5 text-xs font-medium text-green-400">
-                {confirmed} confirmado{confirmed !== 1 ? 's' : ''}
+                {confirmed} confirmado{confirmed !== 1 ? "s" : ""}
               </span>
             )}
           </div>
@@ -180,7 +188,10 @@ export default function AgendaPage() {
         {loading ? (
           <div className="space-y-3">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-28 animate-pulse rounded-2xl bg-ink-900" />
+              <div
+                key={i}
+                className="h-28 animate-pulse rounded-2xl bg-ink-900"
+              />
             ))}
           </div>
         ) : appointments.length === 0 ? (
@@ -201,29 +212,38 @@ export default function AgendaPage() {
                     className="rounded-2xl border border-white/10 bg-ink-900 p-5 transition-colors"
                   >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-
                       {/* Time block */}
                       <div className="flex items-start gap-4">
                         <div className="shrink-0 rounded-xl border border-white/10 bg-ink-950 px-3 py-2 text-center min-w-[64px]">
-                          <p className="text-sm font-bold text-white">{appt.startTime}</p>
-                          <p className="text-xs text-zinc-500">{appt.endTime}</p>
+                          <p className="text-sm font-bold text-white">
+                            {appt.startTime}
+                          </p>
+                          <p className="text-xs text-zinc-500">
+                            {appt.endTime}
+                          </p>
                         </div>
 
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-semibold text-white">{appt.clientName}</p>
-                            <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[appt.status]}`}>
+                            <p className="font-semibold text-white">
+                              {appt.clientName}
+                            </p>
+                            <span
+                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[appt.status]}`}
+                            >
                               {STATUS_LABELS[appt.status]}
                             </span>
                           </div>
-                          <p className="mt-0.5 text-sm text-zinc-400">{appt.vehicle}</p>
+                          <p className="mt-0.5 text-sm text-zinc-400">
+                            {appt.vehicle}
+                          </p>
                           <p className="mt-1 text-xs text-zinc-500">
                             {appt.service.name}
-                            {' · '}
+                            {" · "}
                             {fmtDuration(appt.service.duration)}
-                            {' · '}
+                            {" · "}
                             <a
-                              href={`https://wa.me/55${appt.clientPhone.replace(/\D/g, '')}`}
+                              href={`https://wa.me/55${appt.clientPhone.replace(/\D/g, "")}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-kawasaki-400 hover:underline"
@@ -232,7 +252,9 @@ export default function AgendaPage() {
                             </a>
                           </p>
                           {appt.notes && (
-                            <p className="mt-1.5 text-xs text-zinc-500 italic">"{appt.notes}"</p>
+                            <p className="mt-1.5 text-xs text-zinc-500 italic">
+                              "{appt.notes}"
+                            </p>
                           )}
                         </div>
                       </div>
@@ -245,18 +267,21 @@ export default function AgendaPage() {
                             disabled={isBusy}
                             className="rounded-xl border border-kawasaki-500/40 bg-kawasaki-500/10 px-3 py-1.5 text-xs font-semibold text-kawasaki-400 hover:bg-kawasaki-500/20 transition-colors disabled:opacity-50"
                           >
-                            {isBusy ? '...' : `Marcar ${STATUS_LABELS[nextStatus]}`}
+                            {isBusy
+                              ? "..."
+                              : `Marcar ${STATUS_LABELS[nextStatus]}`}
                           </button>
                         )}
-                        {appt.status !== 'CANCELADO' && appt.status !== 'CONCLUIDO' && (
-                          <button
-                            onClick={() => cancel(appt)}
-                            disabled={isBusy}
-                            className="rounded-xl border border-red-500/30 bg-red-500/5 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                          >
-                            Cancelar
-                          </button>
-                        )}
+                        {appt.status !== "CANCELADO" &&
+                          appt.status !== "CONCLUIDO" && (
+                            <button
+                              onClick={() => cancel(appt)}
+                              disabled={isBusy}
+                              className="rounded-xl border border-red-500/30 bg-red-500/5 px-3 py-1.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                            >
+                              Cancelar
+                            </button>
+                          )}
                       </div>
                     </div>
                   </div>

@@ -112,8 +112,11 @@ model ServiceOrder {
   productUsages       ProductUsage[]
 
   @@index([clientId])
+  @@index([vehicleId])
+  @@index([serviceId])
   @@index([createdAt])
   @@index([status])
+  @@index([status, createdAt])
   @@map("service_orders")
 }
 
@@ -126,6 +129,7 @@ model OrderPayment {
   createdAt      DateTime      @default(now())
 
   @@index([serviceOrderId])
+  @@index([createdAt])
   @@map("order_payments")
 }
 
@@ -212,6 +216,7 @@ model StockCount {
 
   @@index([productId])
   @@index([countedAt])
+  @@index([productId, countedAt])
   @@map("stock_counts")
 }
 

@@ -2,11 +2,14 @@ import {
   Body,
   Controller,
   Get,
+  Inject,
   Param,
   Post,
   Query,
   UseGuards,
 } from "@nestjs/common";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
 import { ApiTags, ApiBearerAuth, ApiOperation } from "@nestjs/swagger";
 import { JwtAuthGuard } from "../../../auth/presentation/guards/jwt-auth.guard";
 import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
@@ -28,11 +31,21 @@ function todayRange() {
 @UseGuards(JwtAuthGuard)
 @Controller("cash")
 export class CashController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
+
+  private invalidateCashCache() {
+    return this.cache.del("cash:today");
+  }
 
   @Get("today")
   @ApiOperation({ summary: "Situação do caixa de hoje" })
   async today() {
+    const cached = await this.cache.get("cash:today");
+    if (cached) return cached;
+
     const session = await this.prisma.cashSession.findUnique({
       where: { date: todayStr() },
       include: { outflows: { orderBy: { createdAt: "asc" } } },
@@ -109,7 +122,7 @@ export class CashController {
       difference = Number(session.physicalCount) - cashInDrawer;
     }
 
-    return {
+    const result = {
       session,
       revenue: {
         total: totalRevenue,
@@ -127,6 +140,10 @@ export class CashController {
       cashInDrawer,
       difference,
     };
+
+    // Cache de 15s — invalidado em abertura, fechamento e saídas
+    await this.cache.set("cash:today", result, 15_000);
+    return result;
   }
 
   @Get("suggested-opening")
@@ -196,7 +213,7 @@ export class CashController {
       operatorName: string;
     },
   ) {
-    return this.prisma.cashSession.create({
+    const result = await this.prisma.cashSession.create({
       data: {
         date: todayStr(),
         openingBalance: body.openingBalance ?? 0,
@@ -205,6 +222,8 @@ export class CashController {
       },
       include: { outflows: true },
     });
+    await this.invalidateCashCache();
+    return result;
   }
 
   @Post("close")
@@ -214,11 +233,13 @@ export class CashController {
       where: { date: todayStr() },
     });
     if (!session) throw new Error("Nenhum caixa aberto hoje.");
-    return this.prisma.cashSession.update({
+    const result = await this.prisma.cashSession.update({
       where: { id: session.id },
       data: { closedAt: new Date(), physicalCount: body.physicalCount },
       include: { outflows: true },
     });
+    await this.invalidateCashCache();
+    return result;
   }
 
   @Get("history")
@@ -398,11 +419,13 @@ export class CashController {
     @Param("id") id: string,
     @Body() body: { physicalCount: number },
   ) {
-    return this.prisma.cashSession.update({
+    const result = await this.prisma.cashSession.update({
       where: { id },
       data: { closedAt: new Date(), physicalCount: body.physicalCount },
       include: { outflows: true },
     });
+    await this.invalidateCashCache();
+    return result;
   }
 
   @Post("reopen")
@@ -413,11 +436,13 @@ export class CashController {
     });
     if (!session) throw new Error("Nenhum caixa registrado hoje.");
     if (!session.closedAt) throw new Error("Caixa já está aberto.");
-    return this.prisma.cashSession.update({
+    const result = await this.prisma.cashSession.update({
       where: { id: session.id },
       data: { closedAt: null, physicalCount: null },
       include: { outflows: true },
     });
+    await this.invalidateCashCache();
+    return result;
   }
 
   @Post("outflow")
@@ -441,6 +466,8 @@ export class CashController {
     });
     if (!session || session.closedAt) throw new Error("Caixa não está aberto.");
     const src = body.source === "DIGITAL" ? "DIGITAL" : "FISICO";
+
+    let result: any;
 
     if (body.type === "RESERVE" && body.billId) {
       const bill = await this.prisma.bill.findUnique({
@@ -466,10 +493,8 @@ export class CashController {
           },
         }),
       ]);
-      return { ok: true, type: "RESERVE" };
-    }
-
-    if (body.type === "BILL" && body.billId) {
+      result = { ok: true, type: "RESERVE" };
+    } else if (body.type === "BILL" && body.billId) {
       const bill = await this.prisma.bill.findUnique({
         where: { id: body.billId },
       });
@@ -490,10 +515,8 @@ export class CashController {
           data: { status: "PAGO", paidAt: new Date() },
         }),
       ]);
-      return { ok: true, type: "BILL" };
-    }
-
-    if (body.type === "PRODUCT" && body.productId) {
+      result = { ok: true, type: "BILL" };
+    } else if (body.type === "PRODUCT" && body.productId) {
       const product = await this.prisma.product.findUnique({
         where: { id: body.productId },
       });
@@ -529,18 +552,21 @@ export class CashController {
           },
         }),
       ]);
-      return { ok: true, type: "PRODUCT" };
+      result = { ok: true, type: "PRODUCT" };
+    } else {
+      result = await this.prisma.cashOutflow.create({
+        data: {
+          sessionId: session.id,
+          amount: body.amount,
+          reason: body.reason,
+          category: (body.category as any) ?? "OUTRO",
+          source: src,
+          supplier: body.supplier,
+        },
+      });
     }
 
-    return this.prisma.cashOutflow.create({
-      data: {
-        sessionId: session.id,
-        amount: body.amount,
-        reason: body.reason,
-        category: (body.category as any) ?? "OUTRO",
-        source: src,
-        supplier: body.supplier,
-      },
-    });
+    await this.invalidateCashCache();
+    return result;
   }
 }

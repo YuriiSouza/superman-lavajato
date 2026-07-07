@@ -215,11 +215,28 @@ export class GetFinancialUseCase {
       this.prisma.product.findMany({ select: { id: true, costPrice: true } }),
     ]);
 
+    // Pré-agrupa por productId para evitar O(n×m) nos loops abaixo
+    const countsByProduct = new Map<string, typeof allCounts>();
+    for (const c of allCounts) {
+      const list = countsByProduct.get(c.productId) ?? [];
+      list.push(c);
+      countsByProduct.set(c.productId, list);
+    }
+
+    const entriesCostByProduct = new Map<string, number>();
+    for (const e of entries) {
+      const prev = entriesCostByProduct.get(e.productId) ?? 0;
+      entriesCostByProduct.set(
+        e.productId,
+        prev + Number(e.quantity) * Number(e.costPrice),
+      );
+    }
+
     let cmv = 0;
     for (const product of products) {
-      const productCounts = allCounts.filter((c) => c.productId === product.id);
+      const productCounts = countsByProduct.get(product.id) ?? [];
       const fallbackCost = Number(product.costPrice ?? 0);
-      const costOf = (c: (typeof productCounts)[0]) =>
+      const costOf = (c: (typeof allCounts)[0]) =>
         Number(c.costPrice ?? fallbackCost);
 
       const opening = productCounts.find((c) => new Date(c.countedAt) <= start);
@@ -232,9 +249,7 @@ export class GetFinancialUseCase {
       const closingValue = closing
         ? Number(closing.quantity) * costOf(closing)
         : 0;
-      const purchasesCost = entries
-        .filter((e) => e.productId === product.id)
-        .reduce((s, e) => s + Number(e.quantity) * Number(e.costPrice), 0);
+      const purchasesCost = entriesCostByProduct.get(product.id) ?? 0;
 
       cmv += openingValue + purchasesCost - closingValue;
     }

@@ -1,48 +1,59 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import { Plus, ClipboardList, X, MessageCircle } from 'lucide-react';
+import { useState, useCallback } from "react";
+import { Plus, ClipboardList, X, MessageCircle } from "lucide-react";
 
 function waLink(phone: string) {
-  const digits = phone.replace(/\D/g, '');
-  const number = digits.startsWith('55') ? digits : `55${digits}`;
+  const digits = phone.replace(/\D/g, "");
+  const number = digits.startsWith("55") ? digits : `55${digits}`;
   return `https://wa.me/${number}`;
 }
-import { crm } from '@/lib/crm/api';
-import NovaOSModal from './NovaOSModal';
-import ReceberPagamentoModal from './ReceberPagamentoModal';
+import { crm } from "@/lib/crm/api";
+import NovaOSModal from "./NovaOSModal";
+import ReceberPagamentoModal from "./ReceberPagamentoModal";
 
-const fmt = (v: number) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const fmt = (v: number) =>
+  `R$ ${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const STATUS_COLOR: Record<string, string> = {
-  PENDENTE:     'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400',
-  EM_ANDAMENTO: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400',
-  CONCLUIDO:    'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400',
+  PENDENTE:
+    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
+  EM_ANDAMENTO:
+    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
+  CONCLUIDO:
+    "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
 };
 const STATUS_LABEL: Record<string, string> = {
-  PENDENTE: 'Aguardando', EM_ANDAMENTO: 'Em andamento', CONCLUIDO: 'Concluído',
+  PENDENTE: "Aguardando",
+  EM_ANDAMENTO: "Em andamento",
+  CONCLUIDO: "Concluído",
 };
 
-export default function OSActionsWidget({ onSuccess }: { onSuccess?: () => void }) {
-  const [novaOS, setNovaOS]         = useState(false);
-  const [osModal, setOsModal]       = useState(false);
+export default function OSActionsWidget({
+  onSuccess,
+}: {
+  onSuccess?: () => void;
+}) {
+  const [novaOS, setNovaOS] = useState(false);
+  const [osModal, setOsModal] = useState(false);
   const [openOrders, setOpenOrders] = useState<any[]>([]);
-  const [loadingOS, setLoadingOS]   = useState(false);
-  const [paying, setPaying]         = useState<any | null>(null);
+  const [loadingOS, setLoadingOS] = useState(false);
+  const [paying, setPaying] = useState<any | null>(null);
 
   const loadOpenOrders = useCallback(() => {
     setLoadingOS(true);
     Promise.all([
-      crm.orders.list({ status: 'PENDENTE' }),
-      crm.orders.list({ status: 'EM_ANDAMENTO' }),
-      crm.orders.list({ status: 'CONCLUIDO' }),
+      crm.orders.list({ status: "PENDENTE" }),
+      crm.orders.list({ status: "EM_ANDAMENTO" }),
+      crm.orders.list({ status: "CONCLUIDO" }),
     ])
       .then(([a, b, c]) =>
         setOpenOrders(
-          [...a, ...b, ...c].sort((x: any, y: any) =>
-            new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime()
-          )
-        )
+          [...a, ...b, ...c].sort(
+            (x: any, y: any) =>
+              new Date(y.createdAt).getTime() - new Date(x.createdAt).getTime(),
+          ),
+        ),
       )
       .finally(() => setLoadingOS(false));
   }, []);
@@ -52,8 +63,10 @@ export default function OSActionsWidget({ onSuccess }: { onSuccess?: () => void 
     setOsModal(true);
   }
 
-  async function handlePaymentConfirm(payments: { method: string; amount: number }[]) {
-    await crm.orders.update(paying.id, { status: 'PAGO', payments });
+  async function handlePaymentConfirm(
+    payments: { method: string; amount: number }[],
+  ) {
+    await crm.orders.update(paying.id, { status: "PAGO", payments });
     setPaying(null);
     loadOpenOrders();
     onSuccess?.();
@@ -81,7 +94,10 @@ export default function OSActionsWidget({ onSuccess }: { onSuccess?: () => void 
       <NovaOSModal
         open={novaOS}
         onClose={() => setNovaOS(false)}
-        onSuccess={() => { onSuccess?.(); loadOpenOrders(); }}
+        onSuccess={() => {
+          onSuccess?.();
+          loadOpenOrders();
+        }}
       />
 
       {/* modal OS em aberto */}
@@ -90,9 +106,12 @@ export default function OSActionsWidget({ onSuccess }: { onSuccess?: () => void 
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl flex flex-col max-h-[85vh]">
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700 shrink-0">
               <div>
-                <h2 className="font-semibold text-gray-900 dark:text-gray-100">OS em aberto</h2>
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100">
+                  OS em aberto
+                </h2>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                  {openOrders.length} {openOrders.length === 1 ? 'ordem' : 'ordens'} pendentes
+                  {openOrders.length}{" "}
+                  {openOrders.length === 1 ? "ordem" : "ordens"} pendentes
                 </p>
               </div>
               <button
@@ -107,19 +126,32 @@ export default function OSActionsWidget({ onSuccess }: { onSuccess?: () => void 
               {loadingOS ? (
                 <div className="p-4 space-y-3 animate-pulse">
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl" />
+                    <div
+                      key={i}
+                      className="h-14 bg-gray-100 dark:bg-gray-800 rounded-xl"
+                    />
                   ))}
                 </div>
               ) : openOrders.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-2 text-center">
-                  <ClipboardList size={32} className="text-gray-300 dark:text-gray-600" />
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Nenhuma OS em aberto</p>
+                  <ClipboardList
+                    size={32}
+                    className="text-gray-300 dark:text-gray-600"
+                  />
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Nenhuma OS em aberto
+                  </p>
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
                   {openOrders.map((o: any) => (
-                    <div key={o.id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${STATUS_COLOR[o.status]}`}>
+                    <div
+                      key={o.id}
+                      className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                    >
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${STATUS_COLOR[o.status]}`}
+                      >
                         {STATUS_LABEL[o.status]}
                       </span>
                       <div className="flex-1 min-w-0">
@@ -142,7 +174,9 @@ export default function OSActionsWidget({ onSuccess }: { onSuccess?: () => void 
                         </div>
                         <p className="text-xs text-gray-400 dark:text-gray-500">
                           <span className="font-mono">{o.vehicle?.plate}</span>
-                          {o.vehicle?.model && <span className="ml-1">· {o.vehicle.model}</span>}
+                          {o.vehicle?.model && (
+                            <span className="ml-1">· {o.vehicle.model}</span>
+                          )}
                           <span className="ml-1">· {o.service?.name}</span>
                         </p>
                       </div>
@@ -153,17 +187,33 @@ export default function OSActionsWidget({ onSuccess }: { onSuccess?: () => void 
                         value={o.status}
                         onChange={(e) => {
                           const next = e.target.value;
-                          if (next === 'PAGO') {
+                          if (next === "PAGO") {
                             setPaying(o);
                           } else {
-                            crm.orders.update(o.id, { status: next }).then(loadOpenOrders);
+                            crm.orders
+                              .update(o.id, { status: next })
+                              .then(loadOpenOrders);
                           }
                         }}
                         className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0 cursor-pointer"
                       >
-                        {['PENDENTE', 'EM_ANDAMENTO', 'CONCLUIDO', 'PAGO', 'CANCELADO'].map((s) => (
+                        {[
+                          "PENDENTE",
+                          "EM_ANDAMENTO",
+                          "CONCLUIDO",
+                          "PAGO",
+                          "CANCELADO",
+                        ].map((s) => (
                           <option key={s} value={s}>
-                            {{ PENDENTE: 'Aguardando', EM_ANDAMENTO: 'Em andamento', CONCLUIDO: 'Concluído', PAGO: 'Pago', CANCELADO: 'Cancelado' }[s]}
+                            {
+                              {
+                                PENDENTE: "Aguardando",
+                                EM_ANDAMENTO: "Em andamento",
+                                CONCLUIDO: "Concluído",
+                                PAGO: "Pago",
+                                CANCELADO: "Cancelado",
+                              }[s]
+                            }
                           </option>
                         ))}
                       </select>
@@ -175,7 +225,10 @@ export default function OSActionsWidget({ onSuccess }: { onSuccess?: () => void 
 
             <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center shrink-0">
               <button
-                onClick={() => { setOsModal(false); setNovaOS(true); }}
+                onClick={() => {
+                  setOsModal(false);
+                  setNovaOS(true);
+                }}
                 className="flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline"
               >
                 <Plus size={14} /> Nova OS
@@ -195,7 +248,9 @@ export default function OSActionsWidget({ onSuccess }: { onSuccess?: () => void 
       <ReceberPagamentoModal
         open={!!paying}
         totalValue={paying ? Number(paying.totalValue) : 0}
-        clientName={paying ? `${paying.client?.name} — ${paying.vehicle?.plate}` : ''}
+        clientName={
+          paying ? `${paying.client?.name} — ${paying.vehicle?.plate}` : ""
+        }
         onConfirm={handlePaymentConfirm}
         onClose={() => setPaying(null)}
       />

@@ -1,11 +1,18 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import { Cache } from "cache-manager";
 import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
 
 @Injectable()
 export class GetDashboardUseCase {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+  ) {}
 
   async execute() {
+    const cached = await this.cache.get("dashboard");
+    if (cached) return cached;
     const now = new Date();
     const todayStart = new Date(
       now.getFullYear(),
@@ -68,7 +75,7 @@ export class GetDashboardUseCase {
       return acc;
     }, {});
 
-    return {
+    const result = {
       today: {
         ordersCount: todayOrders.length,
         revenue: todayRevenue,
@@ -79,5 +86,9 @@ export class GetDashboardUseCase {
       clients: { total: totalClients, churn: churnClients },
       orders: { pending: pendingCount, active: activeCount },
     };
+
+    // Cache por 30s — dados do dashboard mudam pouco entre requisições
+    await this.cache.set("dashboard", result, 30_000);
+    return result;
   }
 }
