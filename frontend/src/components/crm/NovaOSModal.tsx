@@ -122,7 +122,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
       try {
         const res = await crm.clients.list(clientQuery);
         if (cancelled) return;
-        setClientResults(Array.isArray(res) ? res : []);
+        setClientResults(Array.isArray(res?.data) ? res.data : []);
         openDropdown();
       } catch {
         if (!cancelled) setClientResults([]);
