@@ -284,12 +284,16 @@ export default function ReativacaoPage() {
                           </p>
                           <span
                             className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              (c.daysSince ?? 0) > 60
-                                ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
-                                : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                              c.daysSince == null
+                                ? "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300"
+                                : c.daysSince > 60
+                                  ? "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400"
+                                  : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
                             }`}
                           >
-                            {c.daysSince ?? "?"} dias sem visita
+                            {c.daysSince == null
+                              ? "Nunca visitou"
+                              : `${c.daysSince} dias sem visita`}
                           </span>
                           {alreadySent && (
                             <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400">

@@ -34,6 +34,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
 
   // Step 1 — service
   const [services, setServices] = useState<any[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
   const [selectedService, setSelectedService] = useState<any>(null);
 
   // Step 2 — client/vehicle (requiresVehicle) or description (no vehicle)
@@ -98,30 +99,41 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
 
   useEffect(() => {
     if (open) {
-      crm.services.list().then(setServices);
+      setLoadingServices(true);
+      crm.services.list()
+        .then(setServices)
+        .catch(() => setServices([]))
+        .finally(() => setLoadingServices(false));
     } else {
       resetAll();
     }
   }, [open, resetAll]);
 
-  // Debounced client search
+  // Debounced client search — cancela buscas antigas para evitar respostas fora de ordem
   useEffect(() => {
     if (selectedClient || clientQuery.length < 2) {
       setClientResults([]);
       setShowDrop(false);
       return;
     }
+    let cancelled = false;
     const timer = setTimeout(async () => {
       setSearching(true);
       try {
         const res = await crm.clients.list(clientQuery);
-        setClientResults(res);
+        if (cancelled) return;
+        setClientResults(Array.isArray(res) ? res : []);
         openDropdown();
+      } catch {
+        if (!cancelled) setClientResults([]);
       } finally {
-        setSearching(false);
+        if (!cancelled) setSearching(false);
       }
     }, 300);
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clientQuery, selectedClient]);
 
@@ -332,13 +344,21 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
             {/* ── STEP 1: Serviço ── */}
             {step === 1 && (
               <div className="space-y-4">
-                {groups.length === 0 && (
+                {loadingServices ? (
+                  <div className="flex flex-col items-center justify-center py-12 gap-2">
+                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm text-gray-400 dark:text-gray-500">
+                      Carregando serviços...
+                    </p>
+                  </div>
+                ) : groups.length === 0 ? (
                   <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-8">
                     Nenhum serviço cadastrado ainda.
                   </p>
-                )}
-                {groups.map((g) => (
-                  <div key={g.category?.id ?? "sem"}>
+                ) : null}
+                {!loadingServices &&
+                  groups.map((g) => (
+                    <div key={g.category?.id ?? "sem"}>
                     <div className="flex items-center gap-2 mb-2">
                       {g.category ? (
                         <Tag size={13} className="text-blue-400" />

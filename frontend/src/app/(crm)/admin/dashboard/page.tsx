@@ -1312,7 +1312,10 @@ export default function DashboardPage() {
                       {c.name}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500">
-                      {c.vehicle ?? "sem veículo"} · {c.daysSince ?? "?"} dias
+                      {c.vehicle ?? "sem veículo"} ·{" "}
+                      {c.daysSince != null
+                        ? `${c.daysSince} dias`
+                        : "nunca visitou"}
                     </p>
                   </div>
                   <a
