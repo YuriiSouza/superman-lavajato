@@ -53,7 +53,12 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} h-full`}>
+    <html
+      lang="pt-BR"
+      className={`${inter.variable} h-full`}
+      // a classe `dark` é adicionada pelo script de tema antes da hidratação
+      suppressHydrationWarning
+    >
       <body className="font-sans antialiased h-full">
         <AuthSessionProvider>{children}</AuthSessionProvider>
       </body>
