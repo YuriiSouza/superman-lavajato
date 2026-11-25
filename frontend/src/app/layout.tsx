@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { fetchSiteSettings } from "@/lib/site";
 import AuthSessionProvider from "@/components/crm/SessionProvider";
+import { THEME_INIT_SCRIPT } from "@/components/crm/theme-script";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -59,6 +60,14 @@ export default function RootLayout({
       // a classe `dark` é adicionada pelo script de tema antes da hidratação
       suppressHydrationWarning
     >
+      <head>
+        {/* Aplica o tema do CRM antes da primeira pintura — evita o flash branco
+            no F5. Precisa ser um <script> síncrono no <head>: o next/script
+            (beforeInteractive) só executa depois que o JS do Next carrega.
+            O React só avisa sobre este <script> se remontar a árvore no
+            cliente, o que acontece apenas após um erro de hidratação. */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className="font-sans antialiased h-full">
         <AuthSessionProvider>{children}</AuthSessionProvider>
       </body>

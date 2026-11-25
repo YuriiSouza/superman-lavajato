@@ -101,7 +101,8 @@ const nav = [
         href: "/admin/estoque",
         icon: Package,
         label: "Estoque",
-        roles: ["ADMIN"] as Role[],
+        // CAIXA acessa para registrar a contagem de estoque
+        roles: ["ADMIN", "CAIXA"] as Role[],
       },
     ],
   },

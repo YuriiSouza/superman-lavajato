@@ -11,6 +11,7 @@ import {
   ChevronUp,
   CheckCircle2,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
 import { crm } from "@/lib/crm/api";
 
 const UNIT_OPTIONS = [
@@ -41,6 +42,10 @@ const inputCls =
   "w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500";
 
 export default function EstoquePage() {
+  // CAIXA só registra contagem; cadastro de produto e custos ficam com o ADMIN
+  const { data: session } = useSession();
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
+
   const [products, setProducts] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [intelligence, setIntelligence] = useState<Record<string, any>>({});
@@ -160,12 +165,14 @@ export default function EstoquePage() {
           >
             <ClipboardList size={13} /> Registrar contagem
           </button>
-          <button
-            onClick={() => setShowNew(true)}
-            className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg transition-colors"
-          >
-            <Plus size={13} /> Novo produto
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setShowNew(true)}
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg transition-colors"
+            >
+              <Plus size={13} /> Novo produto
+            </button>
+          )}
         </div>
       </div>
 
@@ -239,7 +246,7 @@ export default function EstoquePage() {
                       {Number(p.minQuantity) > 0 && (
                         <span> · mín {fmt(Number(p.minQuantity))}</span>
                       )}
-                      {p.costPrice && (
+                      {isAdmin && p.costPrice && (
                         <span>
                           {" "}
                           · {fmtMoney(Number(p.costPrice))}/{p.unit}
@@ -358,6 +365,7 @@ export default function EstoquePage() {
                 </h2>
                 <p className="text-xs text-gray-400 dark:text-gray-500">
                   {new Date().toLocaleDateString("pt-BR", {
+                    timeZone: "America/Sao_Paulo",
                     weekday: "long",
                     day: "numeric",
                     month: "long",
@@ -386,7 +394,7 @@ export default function EstoquePage() {
                     <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {p.name}
                     </p>
-                    {p.costPrice && (
+                    {isAdmin && p.costPrice && (
                       <p className="text-xs text-gray-400 dark:text-gray-500">
                         {fmtMoney(Number(p.costPrice))}/{p.unit}
                       </p>

@@ -1,8 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-
-type Theme = "light" | "dark";
+import { resolveTheme, THEME_STORAGE_KEY, type Theme } from "./theme-script";
 
 const ThemeContext = createContext<{ theme: Theme; toggle: () => void }>({
   theme: "light",
@@ -13,17 +12,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
-    // O script inicial já aplicou a classe; só sincroniza o estado do React
-    setTheme(
-      document.documentElement.classList.contains("dark") ? "dark" : "light",
-    );
+    // No F5 o script do <head> já aplicou a classe antes da pintura. Ao entrar
+    // no CRM por navegação no cliente (ex.: vindo do /login) o script não roda,
+    // então aplicamos aqui também.
+    const initial = resolveTheme();
+    setTheme(initial);
+    document.documentElement.classList.toggle("dark", initial === "dark");
   }, []);
 
   const toggle = () => {
     setTheme((prev) => {
       const next = prev === "light" ? "dark" : "light";
       document.documentElement.classList.toggle("dark", next === "dark");
-      localStorage.setItem("crm-theme", next);
+      localStorage.setItem(THEME_STORAGE_KEY, next);
       return next;
     });
   };

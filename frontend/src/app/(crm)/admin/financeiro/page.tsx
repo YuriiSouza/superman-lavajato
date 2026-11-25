@@ -397,6 +397,7 @@ export default function CaixaPage() {
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {new Date().toLocaleDateString("pt-BR", {
+              timeZone: "America/Sao_Paulo",
               weekday: "long",
               day: "numeric",
               month: "long",
@@ -568,6 +569,7 @@ export default function CaixaPage() {
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400">
             {new Date().toLocaleDateString("pt-BR", {
+              timeZone: "America/Sao_Paulo",
               weekday: "long",
               day: "numeric",
               month: "long",

@@ -918,6 +918,7 @@ export default function DashboardPage() {
           {filtersReady && (
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {new Date().toLocaleDateString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
                 weekday: "long",
                 day: "numeric",
                 month: "long",

@@ -15,7 +15,11 @@ import { JwtAuthGuard } from "../../../auth/presentation/guards/jwt-auth.guard";
 import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
 
 function todayStr() {
-  return new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+  // "YYYY-MM-DD" no fuso do negócio — toISOString() usaria UTC e viraria o
+  // dia às 21h no horário de Brasília
+  return new Date().toLocaleDateString("sv-SE", {
+    timeZone: "America/Sao_Paulo",
+  });
 }
 
 function todayRange() {
