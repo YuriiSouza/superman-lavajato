@@ -11,23 +11,14 @@ function waLink(phone: string) {
 import { crm } from "@/lib/crm/api";
 import NovaOSModal from "./NovaOSModal";
 import ReceberPagamentoModal from "./ReceberPagamentoModal";
+import { ORDER_STATUSES, ORDER_STATUS_LABEL, ORDER_STATUS_STYLE } from "@/lib/crm/status";
+import { Plate } from "@/components/crm/Plate";
 
 const fmt = (v: number) =>
   `R$ ${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-const STATUS_COLOR: Record<string, string> = {
-  PENDENTE:
-    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
-  EM_ANDAMENTO:
-    "bg-agua-100 text-agua-700 dark:bg-agua-900/40 dark:text-agua-300",
-  CONCLUIDO:
-    "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
-};
-const STATUS_LABEL: Record<string, string> = {
-  PENDENTE: "Aguardando",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDO: "Concluído",
-};
+const STATUS_COLOR = ORDER_STATUS_STYLE;
+const STATUS_LABEL = ORDER_STATUS_LABEL;
 
 export default function OSActionsWidget({
   onSuccess,
@@ -173,7 +164,7 @@ export default function OSActionsWidget({
                           )}
                         </div>
                         <p className="text-xs text-gray-400 dark:text-gray-500">
-                          <span className="font-mono">{o.vehicle?.plate}</span>
+                          <Plate plate={o.vehicle?.plate} className="mr-1.5" />
                           {o.vehicle?.model && (
                             <span className="ml-1">· {o.vehicle.model}</span>
                           )}
@@ -197,23 +188,9 @@ export default function OSActionsWidget({
                         }}
                         className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kawasaki-500 shrink-0 cursor-pointer"
                       >
-                        {[
-                          "PENDENTE",
-                          "EM_ANDAMENTO",
-                          "CONCLUIDO",
-                          "PAGO",
-                          "CANCELADO",
-                        ].map((s) => (
+                        {ORDER_STATUSES.map((s) => (
                           <option key={s} value={s}>
-                            {
-                              {
-                                PENDENTE: "Aguardando",
-                                EM_ANDAMENTO: "Em andamento",
-                                CONCLUIDO: "Concluído",
-                                PAGO: "Pago",
-                                CANCELADO: "Cancelado",
-                              }[s]
-                            }
+                            {ORDER_STATUS_LABEL[s]}
                           </option>
                         ))}
                       </select>

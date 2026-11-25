@@ -13,6 +13,7 @@ import {
 import { useClients } from "@/lib/crm/use-crm";
 import { crm } from "@/lib/crm/api";
 import OSActionsWidget from "@/components/crm/OSActionsWidget";
+import { Plate } from "@/components/crm/Plate";
 
 function waLink(phone: string) {
   const digits = phone.replace(/\D/g, "");
@@ -430,9 +431,7 @@ export default function ClientesPage() {
                         className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2"
                       >
                         <div>
-                          <span className="font-mono text-xs text-gray-700 dark:text-gray-300 font-semibold">
-                            {v.plate}
-                          </span>
+                          <Plate plate={v.plate} className="mr-1.5" />
                           <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                             {v.model} {v.color && `· ${v.color}`} · {v.type}
                           </span>

@@ -5,31 +5,12 @@ import { Plus, X } from "lucide-react";
 import { crm } from "@/lib/crm/api";
 import NovaOSModal from "@/components/crm/NovaOSModal";
 import ReceberPagamentoModal from "@/components/crm/ReceberPagamentoModal";
+import { ORDER_STATUSES, ORDER_STATUS_LABEL, ORDER_STATUS_STYLE } from "@/lib/crm/status";
+import { Plate } from "@/components/crm/Plate";
 
-const STATUS_OPTIONS = [
-  "PENDENTE",
-  "EM_ANDAMENTO",
-  "CONCLUIDO",
-  "PAGO",
-  "CANCELADO",
-] as const;
-const STATUS_LABEL: Record<string, string> = {
-  PENDENTE: "Aguardando",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDO: "Concluído",
-  PAGO: "Pago",
-  CANCELADO: "Cancelado",
-};
-const STATUS_COLOR: Record<string, string> = {
-  PENDENTE:
-    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
-  EM_ANDAMENTO:
-    "bg-agua-100 text-agua-700 dark:bg-agua-900/40 dark:text-agua-300",
-  CONCLUIDO:
-    "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
-  PAGO: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
-  CANCELADO: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
-};
+const STATUS_OPTIONS = ORDER_STATUSES;
+const STATUS_LABEL = ORDER_STATUS_LABEL;
+const STATUS_COLOR = ORDER_STATUS_STYLE;
 const PAYMENT_LABEL: Record<string, string> = {
   PIX: "Pix",
   DINHEIRO: "Dinheiro",
@@ -273,9 +254,7 @@ export default function OrdensPage() {
                       <td className="px-4 py-3">
                         {o.vehicle ? (
                           <>
-                            <span className="font-mono text-xs text-gray-600 dark:text-gray-300">
-                              {o.vehicle.plate}
-                            </span>
+                            <Plate plate={o.vehicle.plate} className="mr-1.5" />
                             {o.vehicle.model && (
                               <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">
                                 · {o.vehicle.model}
@@ -335,7 +314,7 @@ export default function OrdensPage() {
                           onChange={(e) =>
                             handleStatusChange(o, e.target.value)
                           }
-                          className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-kawasaki-500 ${STATUS_COLOR[o.status]} bg-transparent`}
+                          className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-kawasaki-500 ${STATUS_COLOR[o.status]}`}
                         >
                           {STATUS_OPTIONS.map((s) => (
                             <option key={s} value={s}>
@@ -362,7 +341,7 @@ export default function OrdensPage() {
                       <p className="text-xs text-gray-400 dark:text-gray-500">
                         {o.vehicle ? (
                           <>
-                            <span className="font-mono">{o.vehicle.plate}</span>
+                            <Plate plate={o.vehicle.plate} className="mr-1.5" />
                             {o.vehicle.model && <> · {o.vehicle.model}</>}
                             {" · "}
                           </>
@@ -381,7 +360,7 @@ export default function OrdensPage() {
                     <select
                       value={o.status}
                       onChange={(e) => handleStatusChange(o, e.target.value)}
-                      className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-kawasaki-500 ${STATUS_COLOR[o.status]} bg-transparent`}
+                      className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-kawasaki-500 ${STATUS_COLOR[o.status]}`}
                     >
                       {STATUS_OPTIONS.map((s) => (
                         <option key={s} value={s}>

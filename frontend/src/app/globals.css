@@ -38,6 +38,8 @@
   --color-ink-700: #26262b;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-barlow-condensed), var(--font-inter),
+    ui-sans-serif, system-ui, sans-serif;
 
   --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -52,6 +54,26 @@
   100% {
     box-shadow: 0 0 0 0 rgba(107, 191, 35, 0);
   }
+}
+
+/* Cores de série dos gráficos (identidade, ordem fixa — nunca reciclar).
+   Validadas com o validador de paleta: claro sobre #ffffff, escuro sobre
+   #111827 (bg-gray-900). Slot 1 é o verde da marca. */
+:root {
+  --chart-1: #539817;
+  --chart-2: #2a78d6;
+  --chart-3: #eb6834;
+  --chart-4: #6250d6;
+  --chart-5: #eda100;
+  --chart-6: #e87ba4;
+}
+.dark {
+  --chart-1: #539817;
+  --chart-2: #3987e5;
+  --chart-3: #d95926;
+  --chart-4: #9085e9;
+  --chart-5: #c98500;
+  --chart-6: #d55181;
 }
 
 html {

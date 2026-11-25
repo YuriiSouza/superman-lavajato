@@ -4,8 +4,6 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import {
   Wallet,
-  TrendingUp,
-  Smartphone,
   ArrowDownCircle,
   Plus,
   X,
@@ -13,7 +11,6 @@ import {
   Unlock,
   AlertTriangle,
   CheckCircle2,
-  Clock,
   ClipboardList,
   FileText,
   Package,
@@ -24,6 +21,8 @@ import { crm } from "@/lib/crm/api";
 import NovaOSModal from "@/components/crm/NovaOSModal";
 import ReceberPagamentoModal from "@/components/crm/ReceberPagamentoModal";
 import VehicleTypeChart from "@/components/crm/VehicleTypeChart";
+import { ORDER_STATUSES, ORDER_STATUS_LABEL, ORDER_STATUS_STYLE } from "@/lib/crm/status";
+import { Plate } from "@/components/crm/Plate";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -54,13 +53,7 @@ const PAYMENT_BADGE: Record<string, string> = {
     "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  PENDENTE: "Pendente",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDO: "Concluído",
-  PAGO: "Pago",
-  CANCELADO: "Cancelado",
-};
+const STATUS_LABEL = ORDER_STATUS_LABEL;
 
 function timeOf(iso: string) {
   return new Date(iso).toLocaleTimeString("pt-BR", {
@@ -692,19 +685,8 @@ export default function CaixaPage() {
               ) : (
                 <div className="divide-y divide-gray-100 dark:divide-gray-700">
                   {openOrders.map((o: any) => {
-                    const statusColor: Record<string, string> = {
-                      PENDENTE:
-                        "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
-                      EM_ANDAMENTO:
-                        "bg-agua-100 text-agua-700 dark:bg-agua-900/40 dark:text-agua-300",
-                      CONCLUIDO:
-                        "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
-                    };
-                    const statusLabel: Record<string, string> = {
-                      PENDENTE: "Aguardando",
-                      EM_ANDAMENTO: "Em andamento",
-                      CONCLUIDO: "Concluído",
-                    };
+                    const statusColor = ORDER_STATUS_STYLE;
+                    const statusLabel = ORDER_STATUS_LABEL;
                     return (
                       <div
                         key={o.id}
@@ -717,9 +699,7 @@ export default function CaixaPage() {
                         </span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-gray-900 dark:text-gray-100 truncate">
-                            <span className="font-mono text-xs text-gray-400 dark:text-gray-500 mr-1.5">
-                              {o.vehicle?.plate}
-                            </span>
+                            <Plate plate={o.vehicle?.plate} className="mr-1.5" />
                             {o.client?.name}
                           </p>
                           <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -744,23 +724,9 @@ export default function CaixaPage() {
                           }}
                           className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kawasaki-500 shrink-0 cursor-pointer"
                         >
-                          {[
-                            "PENDENTE",
-                            "EM_ANDAMENTO",
-                            "CONCLUIDO",
-                            "PAGO",
-                            "CANCELADO",
-                          ].map((s) => (
+                          {ORDER_STATUSES.map((s) => (
                             <option key={s} value={s}>
-                              {
-                                {
-                                  PENDENTE: "Aguardando",
-                                  EM_ANDAMENTO: "Em andamento",
-                                  CONCLUIDO: "Concluído",
-                                  PAGO: "Pago",
-                                  CANCELADO: "Cancelado",
-                                }[s]
-                              }
+                              {ORDER_STATUS_LABEL[s]}
                             </option>
                           ))}
                         </select>
@@ -803,137 +769,147 @@ export default function CaixaPage() {
         </div>
       ) : (
         <>
-          {/* ── alerta de diferença no fechamento ── */}
-          {isClosed && difference !== null && (
-            <div
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm ${
-                Math.abs(difference) < 0.01
-                  ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800 text-green-700 dark:text-green-400"
-                  : difference < 0
-                    ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-400"
-                    : "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400"
-              }`}
-            >
-              {Math.abs(difference) < 0.01 ? (
-                <CheckCircle2 size={16} />
-              ) : (
-                <AlertTriangle size={16} />
-              )}
-              <span>
-                {Math.abs(difference) < 0.01
-                  ? "Caixa fechado sem divergência."
-                  : difference < 0
-                    ? `Faltando ${fmt(Math.abs(difference))} na gaveta.`
-                    : `Sobra de ${fmt(difference)} na gaveta.`}{" "}
-                Contagem física: {fmt(Number(cashSession.physicalCount))}
-              </span>
-            </div>
-          )}
-
-          {/* ── cards ── */}
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp size={14} className="text-green-500" />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Receita total
+          {/* ── painel principal: dinheiro na gaveta ──
+              É o número que o caixa confere o dia todo e no fechamento; o resto
+              fica numa linha secundária abaixo. */}
+          <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="grid lg:grid-cols-[1.4fr_1fr]">
+              <div className="p-5 md:p-6">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {isClosed ? "Ficou na gaveta" : "Dinheiro na gaveta agora"}
                 </p>
-              </div>
-              <p className="text-xl font-semibold text-green-600 dark:text-green-400">
-                {fmt(revenue.total)}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                {revenue.ordersCount} OS · Dinheiro {fmt(cashReceived)} +
-                Digital {fmt(digitalReceived)}
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Wallet size={14} className="text-emerald-500" />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Espécie na gaveta
+                <p className="mt-1 font-display text-5xl md:text-6xl font-semibold leading-none text-gray-900 dark:text-gray-100">
+                  {fmt(cashInDrawer)}
                 </p>
-              </div>
-              <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {fmt(cashInDrawer)}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                Abertura {fmt(Number(cashSession?.openingBalance ?? 0))} +
-                recebido {fmt(cashReceived)}
-                {cashOutflows > 0 && ` − sangrias ${fmt(cashOutflows)}`}
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Smartphone size={14} className="text-kawasaki-600" />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Digital (Pix + Cartão)
+                <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                  Abertura {fmt(Number(cashSession?.openingBalance ?? 0))} +
+                  recebido em dinheiro {fmt(cashReceived)}
+                  {cashOutflows > 0 && ` − sangrias ${fmt(cashOutflows)}`}
                 </p>
+
+                {/* conferência do fechamento */}
+                {isClosed && difference !== null && (
+                  <p
+                    className={`mt-4 inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium ${
+                      Math.abs(difference) < 0.01
+                        ? "bg-kawasaki-50 text-kawasaki-800 dark:bg-kawasaki-900/40 dark:text-kawasaki-300"
+                        : difference < 0
+                          ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"
+                          : "bg-amber-50 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300"
+                    }`}
+                  >
+                    {Math.abs(difference) < 0.01 ? (
+                      <CheckCircle2 size={16} />
+                    ) : (
+                      <AlertTriangle size={16} />
+                    )}
+                    Contado {fmt(Number(cashSession.physicalCount))} —{" "}
+                    {Math.abs(difference) < 0.01
+                      ? "bateu certinho"
+                      : difference < 0
+                        ? `faltando ${fmt(Math.abs(difference))}`
+                        : `sobrando ${fmt(difference)}`}
+                  </p>
+                )}
               </div>
-              <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {fmt(digitalBalance)}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                Inicial {fmt(digitalOpeningBalance)} + recebido{" "}
-                {fmt(digitalReceived)}
-                {digitalOutflows > 0 && ` − saídas ${fmt(digitalOutflows)}`}
-              </p>
+
+              <div className="border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-800 p-5 md:p-6 bg-gray-50/60 dark:bg-gray-950/30">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Recebido hoje
+                </p>
+                <p className="mt-1 font-display text-3xl font-semibold leading-none text-kawasaki-700 dark:text-kawasaki-400">
+                  {fmt(revenue.total)}
+                </p>
+                <dl className="mt-4 space-y-1.5 text-sm">
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-gray-500 dark:text-gray-400">Dinheiro</dt>
+                    <dd className="font-medium text-gray-900 dark:text-gray-100">
+                      {fmt(cashReceived)}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-gray-500 dark:text-gray-400">Pix e cartão</dt>
+                    <dd className="font-medium text-gray-900 dark:text-gray-100">
+                      {fmt(digitalReceived)}
+                    </dd>
+                  </div>
+                  <div className="flex justify-between gap-4">
+                    <dt className="text-gray-500 dark:text-gray-400">OS pagas</dt>
+                    <dd className="font-medium text-gray-900 dark:text-gray-100">
+                      {revenue.ordersCount}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <ArrowDownCircle size={14} className="text-red-400" />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+            {/* números secundários */}
+            <dl className="grid grid-cols-2 lg:grid-cols-4 border-t border-gray-100 dark:border-gray-800">
+              <div className="p-4 border-r border-b lg:border-b-0 border-gray-100 dark:border-gray-800">
+                <dt className="text-xs text-gray-500 dark:text-gray-400">
+                  Saldo digital
+                </dt>
+                <dd className="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {fmt(digitalBalance)}
+                </dd>
+                <dd className="text-xs text-gray-400 dark:text-gray-500">
+                  Inicial {fmt(digitalOpeningBalance)} + recebido{" "}
+                  {fmt(digitalReceived)}
+                  {digitalOutflows > 0 && ` − saídas ${fmt(digitalOutflows)}`}
+                </dd>
+              </div>
+              <div className="p-4 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-gray-800">
+                <dt className="text-xs text-gray-500 dark:text-gray-400">
                   Sangrias
-                </p>
+                </dt>
+                <dd className="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {fmt(outflowsTotal)}
+                </dd>
+                <dd className="text-xs text-gray-400 dark:text-gray-500">
+                  {outflowsTotal === 0
+                    ? "Nenhuma saída hoje"
+                    : [
+                        cashOutflows > 0 && `Dinheiro ${fmt(cashOutflows)}`,
+                        digitalOutflows > 0 && `Digital ${fmt(digitalOutflows)}`,
+                      ]
+                        .filter(Boolean)
+                        .join(" e ")}
+                </dd>
               </div>
-              <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {fmt(outflowsTotal)}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                {cashOutflows > 0 && `Espécie ${fmt(cashOutflows)}`}
-                {cashOutflows > 0 && digitalOutflows > 0 && " · "}
-                {digitalOutflows > 0 && `Digital ${fmt(digitalOutflows)}`}
-                {outflowsTotal === 0 && "—"}
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp size={14} className="text-violet-500" />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Lucro líquido
-                </p>
+              <div className="p-4 border-r border-gray-100 dark:border-gray-800">
+                <dt className="text-xs text-gray-500 dark:text-gray-400">
+                  Lucro do dia
+                </dt>
+                <dd
+                  className={`mt-1 text-lg font-semibold ${
+                    revenue.total - outflowsTotal < 0
+                      ? "text-red-600 dark:text-red-400"
+                      : "text-gray-900 dark:text-gray-100"
+                  }`}
+                >
+                  {fmt(revenue.total - outflowsTotal)}
+                </dd>
+                <dd className="text-xs text-gray-400 dark:text-gray-500">
+                  Recebido − sangrias
+                </dd>
               </div>
-              <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {fmt(revenue.total - outflowsTotal)}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                Receita {fmt(revenue.total)} − sangrias {fmt(outflowsTotal)}
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Clock size={14} className="text-amber-500" />
-                <p className="text-xs text-gray-500 dark:text-gray-400">
+              <div className="p-4">
+                <dt className="text-xs text-gray-500 dark:text-gray-400">
                   Ticket médio
-                </p>
+                </dt>
+                <dd className="mt-1 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  {revenue.ordersCount > 0
+                    ? fmt(revenue.total / revenue.ordersCount)
+                    : "—"}
+                </dd>
+                <dd className="text-xs text-gray-400 dark:text-gray-500">
+                  {revenue.ordersCount > 0
+                    ? `Média de ${revenue.ordersCount} OS`
+                    : "Nenhuma OS paga hoje"}
+                </dd>
               </div>
-              <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {revenue.ordersCount > 0
-                  ? fmt(revenue.total / revenue.ordersCount)
-                  : "R$ 0,00"}
-              </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                {revenue.ordersCount > 0
-                  ? `${fmt(revenue.total)} ÷ ${revenue.ordersCount} OS`
-                  : "Nenhuma OS paga hoje"}
-              </p>
-            </div>
-          </div>
+            </dl>
+          </section>
 
           {/* ── veículos por tipo ── */}
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
@@ -1017,9 +993,7 @@ export default function CaixaPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
                           <p className="text-sm text-gray-900 dark:text-gray-100 truncate">
-                            <span className="font-mono text-xs text-gray-400 dark:text-gray-500 mr-1">
-                              {o.vehicle?.plate}
-                            </span>
+                            <Plate plate={o.vehicle?.plate} className="mr-1.5" />
                             {o.client?.name}
                           </p>
                           <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 shrink-0">

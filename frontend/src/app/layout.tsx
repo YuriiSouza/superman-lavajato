@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Barlow_Condensed, Inter } from "next/font/google";
 import "./globals.css";
 import { fetchSiteSettings } from "@/lib/site";
 import AuthSessionProvider from "@/components/crm/SessionProvider";
@@ -8,6 +8,14 @@ import { THEME_INIT_SCRIPT } from "@/components/crm/theme-script";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+// Display condensada (ar de placa e automobilismo): placas e números principais
+const barlowCondensed = Barlow_Condensed({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-barlow-condensed",
   display: "swap",
 });
 
@@ -56,7 +64,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} h-full`}
+      className={`${inter.variable} ${barlowCondensed.variable} h-full`}
       // a classe `dark` é adicionada pelo script de tema antes da hidratação
       suppressHydrationWarning
     >
