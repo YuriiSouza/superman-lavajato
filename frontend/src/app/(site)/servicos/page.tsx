@@ -7,7 +7,6 @@ import {
   CheckIcon,
   ClockIcon,
   WhatsAppIcon,
-  BoltIcon,
 } from "@/components/icons";
 
 export const metadata: Metadata = {
@@ -38,16 +37,8 @@ export default async function ServicosPage() {
     <>
       {/* Cabeçalho da página */}
       <section className="relative isolate overflow-hidden border-b border-white/10 bg-ink-900 pt-28 pb-16 sm:pt-32">
-        <div
-          aria-hidden
-          className="absolute -right-24 -top-10 -z-10 h-80 w-80 rounded-full bg-kawasaki-600/15 blur-3xl"
-        />
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <span className="inline-flex items-center gap-2 rounded-full border border-kawasaki-500/40 bg-kawasaki-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-kawasaki-300">
-            <BoltIcon className="h-4 w-4" />
-            Preços e pacotes
-          </span>
-          <h1 className="mt-5 max-w-3xl text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+          <h1 className="max-w-3xl font-display text-5xl font-semibold leading-[1.0] text-white sm:text-6xl">
             Escolha o pacote ideal para o seu carro
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-zinc-300">
@@ -76,7 +67,7 @@ export default async function ServicosPage() {
                   }`}
                 >
                   {s.highlight && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-kawasaki-500 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-ink-950">
+                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-kawasaki-500 px-3 py-1 text-xs font-semibold text-ink-950">
                       Mais escolhido
                     </span>
                   )}
@@ -144,7 +135,6 @@ export default async function ServicosPage() {
       <section className="border-y border-white/10 bg-ink-900 py-20 sm:py-24">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <SectionHeading
-            eyebrow="Serviços opcionais"
             title="Turbine o seu pacote"
             description="Combine qualquer opcional com o seu pacote para um resultado ainda mais completo."
           />
@@ -172,7 +162,6 @@ export default async function ServicosPage() {
         <div className="mx-auto grid max-w-6xl items-start gap-12 px-4 sm:px-6 lg:grid-cols-2">
           <div className="lg:sticky lg:top-28">
             <SectionHeading
-              eyebrow="Agendamento"
               title="Reserve o seu horário"
               description="Preencha o formulário e finalizamos a confirmação pelo WhatsApp — rápido e sem complicação. Prefere falar direto? Use o botão abaixo."
             />

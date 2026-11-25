@@ -61,7 +61,6 @@ export function About() {
 
         <div>
           <SectionHeading
-            eyebrow="Sobre nós"
             title="Força e qualidade em cada lavagem"
             description="O Superman Lava a Jato nasceu com uma missão simples: tratar cada carro como se fosse único. Combinamos técnica, produtos de alta qualidade e um atendimento que faz você voltar sempre."
           />

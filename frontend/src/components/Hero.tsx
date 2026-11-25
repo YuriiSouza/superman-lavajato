@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { fetchSiteSettings, whatsappLink } from "@/lib/site";
-import { ArrowRightIcon, WhatsAppIcon, StarIcon, BoltIcon } from "./icons";
+import { WhatsAppIcon, StarIcon } from "./icons";
 
 export async function Hero() {
   const site = await fetchSiteSettings();
@@ -20,21 +20,11 @@ export async function Hero() {
         <div className="absolute inset-0 bg-gradient-to-r from-ink-950/90 to-transparent" />
       </div>
 
-      {/* Brilho verde decorativo */}
-      <div
-        aria-hidden
-        className="absolute -left-32 top-20 -z-10 h-96 w-96 rounded-full bg-kawasaki-600/20 blur-3xl"
-      />
-
       <div className="mx-auto flex min-h-[90vh] max-w-6xl flex-col justify-center px-4 py-24 sm:px-6 lg:min-h-[88vh]">
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-kawasaki-500/40 bg-kawasaki-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-kawasaki-300">
-          <BoltIcon className="h-4 w-4" />
-          Rápido, poderoso e impecável
-        </span>
-
-        <h1 className="mt-6 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-          Seu carro merece um{" "}
-          <span className="text-kawasaki-500">tratamento de herói</span>.
+        {/* O título grande e condensado sobre a foto é o momento marcante do
+            site; o resto da página fica mais quieto. */}
+        <h1 className="max-w-4xl font-display text-6xl font-semibold leading-[0.95] text-white sm:text-7xl lg:text-8xl">
+          Seu carro merece um tratamento de herói.
         </h1>
 
         <p className="mt-6 max-w-xl text-lg leading-relaxed text-zinc-300">
@@ -48,8 +38,7 @@ export async function Hero() {
             href="/agendar"
             className="inline-flex items-center justify-center gap-2 rounded-full bg-kawasaki-500 px-7 py-3.5 text-base font-semibold text-ink-950 shadow-lg shadow-kawasaki-500/20 transition-all hover:bg-kawasaki-400 hover:shadow-kawasaki-500/40"
           >
-            <ArrowRightIcon className="h-5 w-5" />
-            Agendar online
+            Agendar lavagem
           </Link>
           <a
             href={whatsappLink(site.phone)}
@@ -58,7 +47,7 @@ export async function Hero() {
             className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-7 py-3.5 text-base font-semibold text-white backdrop-blur transition-colors hover:border-kawasaki-500 hover:text-kawasaki-400"
           >
             <WhatsAppIcon className="h-5 w-5" />
-            Fale conosco
+            Chamar no WhatsApp
           </a>
         </div>
 

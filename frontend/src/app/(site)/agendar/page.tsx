@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckIcon, ClockIcon, BoltIcon } from "@/components/icons";
+import { CheckIcon, ClockIcon } from "@/components/icons";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -127,11 +127,7 @@ export default function AgendarPage() {
       <div className="mx-auto max-w-2xl px-4 sm:px-6">
         {/* Cabeçalho */}
         <div className="mb-10">
-          <span className="inline-flex items-center gap-2 rounded-full border border-kawasaki-500/40 bg-kawasaki-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-kawasaki-300">
-            <BoltIcon className="h-4 w-4" />
-            Agendamento online
-          </span>
-          <h1 className="mt-4 text-3xl font-extrabold text-white sm:text-4xl">
+          <h1 className="font-display text-5xl font-semibold leading-none text-white">
             Agende sua lavagem
           </h1>
           <p className="mt-2 text-zinc-400">
