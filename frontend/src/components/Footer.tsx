@@ -53,7 +53,7 @@ export function Footer({ site }: { site: SiteSettings }) {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
+          <h3 className="text-base font-semibold text-white">
             Navegação
           </h3>
           <ul className="mt-4 space-y-2.5 text-sm text-zinc-400">
@@ -81,7 +81,7 @@ export function Footer({ site }: { site: SiteSettings }) {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
+          <h3 className="text-base font-semibold text-white">
             Contato
           </h3>
           <ul className="mt-4 space-y-3 text-sm text-zinc-400">
@@ -108,7 +108,7 @@ export function Footer({ site }: { site: SiteSettings }) {
         </div>
 
         <div>
-          <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
+          <h3 className="text-base font-semibold text-white">
             Horário
           </h3>
           <ul className="mt-4 space-y-2.5 text-sm text-zinc-400">

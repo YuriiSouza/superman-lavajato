@@ -33,8 +33,8 @@ const SEGMENTS = [
   {
     key: "regular",
     icon: Repeat,
-    color: "text-blue-500",
-    bg: "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-800",
+    color: "text-kawasaki-600",
+    bg: "bg-kawasaki-50 dark:bg-kawasaki-950/40 border-kawasaki-200 dark:border-kawasaki-800",
   },
   {
     key: "churn",
@@ -64,7 +64,7 @@ function Avatar({ name }: { name: string }) {
 }
 
 const inputCls =
-  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500";
 
 function CategoryManager() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -133,7 +133,7 @@ function CategoryManager() {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 space-y-3">
       <div className="flex items-center gap-2">
-        <Tag size={16} className="text-blue-500" />
+        <Tag size={16} className="text-kawasaki-600" />
         <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
           Categorias de serviço
         </h2>
@@ -156,7 +156,7 @@ function CategoryManager() {
           <button
             onClick={handleCreate}
             disabled={saving || !newName.trim()}
-            className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 shrink-0"
+            className="flex items-center gap-1 px-3 py-2 bg-kawasaki-500 text-ink-950 rounded-lg text-sm font-medium hover:bg-kawasaki-400 disabled:opacity-60 shrink-0"
           >
             <Plus size={14} /> Adicionar
           </button>

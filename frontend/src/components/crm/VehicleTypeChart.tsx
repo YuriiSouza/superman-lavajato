@@ -12,14 +12,8 @@ const LABELS: Record<string, string> = {
   OUTRO: "Outro",
 };
 
-const COLORS = [
-  "#3b82f6",
-  "#10b981",
-  "#f59e0b",
-  "#ef4444",
-  "#8b5cf6",
-  "#ec4899",
-];
+// Cores de série definidas em globals.css (--chart-1..6), uma versão por tema
+const COLORS = [1, 2, 3, 4, 5, 6].map((n) => `var(--chart-${n})`);
 
 function donutPath(
   cx: number,

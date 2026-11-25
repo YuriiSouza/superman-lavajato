@@ -39,7 +39,7 @@ const fmt = (v: number) =>
   `R$ ${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const inputCls =
-  "mt-1 w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "mt-1 w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500";
 
 export default function ContasPage() {
   const [bills, setBills] = useState<any[]>([]);
@@ -149,7 +149,7 @@ export default function ContasPage() {
         </div>
         <button
           onClick={() => setShowNew(true)}
-          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 text-xs px-3 py-2 rounded-lg transition-colors"
         >
           <Plus size={13} /> Nova conta
         </button>
@@ -202,7 +202,7 @@ export default function ContasPage() {
             onClick={() => setFilter(s)}
             className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
               filter === s
-                ? "bg-blue-600 text-white border-blue-600"
+                ? "bg-kawasaki-500 text-ink-950 border-kawasaki-600"
                 : "border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
             }`}
           >
@@ -250,7 +250,7 @@ export default function ContasPage() {
                         {b.name}
                       </p>
                       {b.recurring && (
-                        <span className="text-xs text-blue-500">
+                        <span className="text-xs text-kawasaki-600">
                           recorrente
                         </span>
                       )}
@@ -413,7 +413,7 @@ export default function ContasPage() {
                   required
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="mt-1 w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-1 w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -449,7 +449,7 @@ export default function ContasPage() {
                       setForm({ ...form, amount: e.target.value })
                     }
                     placeholder="R$"
-                    className="mt-1 w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="mt-1 w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500"
                   />
                 </div>
               </div>
@@ -464,7 +464,7 @@ export default function ContasPage() {
                   onChange={(e) =>
                     setForm({ ...form, dueDate: e.target.value })
                   }
-                  className="mt-1 w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-1 w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500"
                 />
               </div>
               <div>
@@ -474,7 +474,7 @@ export default function ContasPage() {
                 <input
                   value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  className="mt-1 w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="mt-1 w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500"
                 />
               </div>
               <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
@@ -490,7 +490,7 @@ export default function ContasPage() {
               </label>
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg mt-2 transition-colors"
+                className="w-full bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 text-sm py-2 rounded-lg mt-2 transition-colors"
               >
                 Salvar
               </button>

@@ -1,6 +1,6 @@
 import { SectionHeading } from "./SectionHeading";
 import { fetchSiteSettings } from "@/lib/site";
-import { PinIcon, ClockIcon, PhoneIcon, ArrowRightIcon } from "./icons";
+import { PinIcon, ClockIcon, PhoneIcon } from "./icons";
 
 export async function Location() {
   const site = await fetchSiteSettings();
@@ -12,7 +12,6 @@ export async function Location() {
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <SectionHeading
-          eyebrow="Onde estamos"
           title="Venha nos fazer uma visita"
           description="Estamos prontos para receber você e o seu carro. Use o mapa para chegar com facilidade."
         />
@@ -86,7 +85,6 @@ export async function Location() {
                 className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-kawasaki-500 px-6 py-3 text-base font-semibold text-ink-950 transition-colors hover:bg-kawasaki-400"
               >
                 Como chegar
-                <ArrowRightIcon className="h-5 w-5" />
               </a>
             </div>
           </div>

@@ -7,6 +7,9 @@ services:
       - '${BACKEND_PORT:-3001}:3001'
     env_file:
       - ./backend/.env
+    environment:
+      # "hoje" (OS do dia, caixa do dia) é calculado no horário local do servidor
+      - TZ=${TZ:-America/Sao_Paulo}
     volumes:
       - ./backend:/app
       - backend_node_modules:/app/node_modules
@@ -26,6 +29,8 @@ services:
       - ./frontend/.env
     environment:
       - WATCHPACK_POLLING=true
+      # datas renderizadas no servidor precisam bater com as do navegador
+      - TZ=${TZ:-America/Sao_Paulo}
     command: npx next dev --webpack
     volumes:
       - ./frontend:/app

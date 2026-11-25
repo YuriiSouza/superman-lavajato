@@ -5,34 +5,13 @@ import { Plus, ClipboardList, X, ChevronRight } from "lucide-react";
 import { crm } from "@/lib/crm/api";
 import NovaOSModal from "./NovaOSModal";
 import ReceberPagamentoModal from "./ReceberPagamentoModal";
+import { ORDER_STATUSES, ORDER_STATUS_LABEL, ORDER_STATUS_STYLE } from "@/lib/crm/status";
+import { Plate } from "@/components/crm/Plate";
 
-const STATUS_LABEL: Record<string, string> = {
-  PENDENTE: "Aguardando",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDO: "Concluído",
-};
-const STATUS_COLOR: Record<string, string> = {
-  PENDENTE:
-    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
-  EM_ANDAMENTO:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
-  CONCLUIDO:
-    "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
-};
-const STATUS_OPTIONS = [
-  "PENDENTE",
-  "EM_ANDAMENTO",
-  "CONCLUIDO",
-  "PAGO",
-  "CANCELADO",
-];
-const STATUS_OPTION_LABEL: Record<string, string> = {
-  PENDENTE: "Aguardando",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDO: "Concluído",
-  PAGO: "Pago",
-  CANCELADO: "Cancelado",
-};
+const STATUS_LABEL = ORDER_STATUS_LABEL;
+const STATUS_COLOR = ORDER_STATUS_STYLE;
+const STATUS_OPTIONS = ORDER_STATUSES;
+const STATUS_OPTION_LABEL = ORDER_STATUS_LABEL;
 
 const fmt = (v: number) =>
   `R$ ${Number(v).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -112,7 +91,7 @@ export default function GlobalActions() {
         {/* Nova OS */}
         <button
           onClick={() => setNovaOS(true)}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white shadow-lg px-4 py-2.5 rounded-full text-sm font-medium transition-all"
+          className="flex items-center gap-2 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 shadow-lg px-4 py-2.5 rounded-full text-sm font-medium transition-all"
         >
           <Plus size={15} /> Nova OS
         </button>
@@ -191,9 +170,7 @@ export default function GlobalActions() {
                       {/* info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-gray-900 dark:text-gray-100 truncate">
-                          <span className="font-mono text-xs text-gray-400 dark:text-gray-500 mr-1.5">
-                            {o.vehicle?.plate}
-                          </span>
+                          <Plate plate={o.vehicle?.plate} className="mr-1.5" />
                           {o.client?.name}
                         </p>
                         <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -211,7 +188,7 @@ export default function GlobalActions() {
                         value={o.status}
                         onChange={(e) => handleStatusChange(o, e.target.value)}
                         onClick={(e) => e.stopPropagation()}
-                        className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0 cursor-pointer"
+                        className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kawasaki-500 shrink-0 cursor-pointer"
                       >
                         {STATUS_OPTIONS.map((s) => (
                           <option key={s} value={s}>
@@ -229,7 +206,7 @@ export default function GlobalActions() {
             <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center shrink-0">
               <button
                 onClick={() => setNovaOS(true)}
-                className="flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline"
+                className="flex items-center gap-1.5 text-sm text-kawasaki-700 dark:text-kawasaki-400 font-medium hover:underline"
               >
                 <Plus size={14} /> Nova OS
               </button>

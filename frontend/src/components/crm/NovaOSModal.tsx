@@ -15,7 +15,7 @@ const PAYMENT_LABEL: Record<string, string> = {
 const VEHICLE_TYPES = ["SEDAN", "SUV", "HATCH", "PICKUP", "MOTO", "OUTRO"];
 
 const inputCls =
-  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500";
 
 function toLocalDatetimeValue(date: Date) {
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -285,7 +285,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                 setShowDrop(false);
                 setNewClient({ name: clientQuery, phone: "" });
               }}
-              className="w-full text-left px-3 py-2.5 text-blue-600 dark:text-blue-400 text-sm font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 flex items-center gap-2"
+              className="w-full text-left px-3 py-2.5 text-kawasaki-700 dark:text-kawasaki-400 text-sm font-medium hover:bg-kawasaki-50 dark:hover:bg-kawasaki-900/20 flex items-center gap-2"
             >
               <Plus size={14} /> Criar novo cliente
             </button>
@@ -346,7 +346,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
               <div className="space-y-4">
                 {loadingServices ? (
                   <div className="flex flex-col items-center justify-center py-12 gap-2">
-                    <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-6 h-6 border-2 border-kawasaki-500 border-t-transparent rounded-full animate-spin" />
                     <p className="text-sm text-gray-400 dark:text-gray-500">
                       Carregando serviços...
                     </p>
@@ -361,7 +361,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                     <div key={g.category?.id ?? "sem"}>
                     <div className="flex items-center gap-2 mb-2">
                       {g.category ? (
-                        <Tag size={13} className="text-blue-400" />
+                        <Tag size={13} className="text-kawasaki-500" />
                       ) : (
                         <Car size={13} className="text-gray-400" />
                       )}
@@ -379,13 +379,13 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                         <button
                           key={svc.id}
                           onClick={() => selectService(svc)}
-                          className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                          className="w-full text-left px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-kawasaki-400 hover:bg-kawasaki-50 dark:hover:bg-kawasaki-900/20 transition-colors"
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
                               {svc.name}
                             </span>
-                            <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                            <span className="text-sm font-semibold text-kawasaki-700 dark:text-kawasaki-400">
                               R$ {Number(svc.price).toFixed(2)}
                             </span>
                           </div>
@@ -445,16 +445,16 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                         )}
                       </div>
                       {selectedClient && (
-                        <div className="mt-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 flex items-center gap-2">
+                        <div className="mt-2 px-3 py-2 bg-kawasaki-50 dark:bg-kawasaki-900/20 rounded-lg border border-kawasaki-200 dark:border-kawasaki-800 flex items-center gap-2">
                           <User
                             size={14}
-                            className="text-blue-500 dark:text-blue-400 shrink-0"
+                            className="text-kawasaki-600 dark:text-kawasaki-400 shrink-0"
                           />
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-blue-900 dark:text-blue-100 truncate">
+                            <p className="text-sm font-medium text-kawasaki-900 dark:text-kawasaki-100 truncate">
                               {selectedClient.name}
                             </p>
-                            <p className="text-xs text-blue-600 dark:text-blue-400">
+                            <p className="text-xs text-kawasaki-700 dark:text-kawasaki-400">
                               {selectedClient.phone}
                             </p>
                           </div>
@@ -466,7 +466,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                             setNewClientMode(true);
                             setNewClient({ name: clientQuery, phone: "" });
                           }}
-                          className="mt-1.5 text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                          className="mt-1.5 text-xs text-kawasaki-700 dark:text-kawasaki-400 hover:underline flex items-center gap-1"
                         >
                           <Plus size={12} /> Criar novo cliente
                         </button>
@@ -505,7 +505,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                           disabled={
                             savingClient || !newClient.name || !newClient.phone
                           }
-                          className="flex-1 py-1.5 text-xs bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-60"
+                          className="flex-1 py-1.5 text-xs bg-kawasaki-500 text-ink-950 rounded-lg font-medium hover:bg-kawasaki-400 disabled:opacity-60"
                         >
                           {savingClient ? "Criando..." : "Criar cliente"}
                         </button>
@@ -531,7 +531,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                             }}
                             className={`w-full text-left px-3 py-2.5 rounded-lg border text-sm transition-colors ${
                               selectedVehicle?.id === v.id
-                                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-900 dark:text-blue-100"
+                                ? "border-kawasaki-500 bg-kawasaki-50 dark:bg-kawasaki-900/20 text-kawasaki-900 dark:text-kawasaki-100"
                                 : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-900 dark:text-gray-100"
                             }`}
                           >
@@ -553,7 +553,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                     {!newVehicleMode ? (
                       <button
                         onClick={() => setNewVehicleMode(true)}
-                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                        className="text-xs text-kawasaki-700 dark:text-kawasaki-400 hover:underline flex items-center gap-1"
                       >
                         <Plus size={12} />
                         {clientVehicles.length === 0
@@ -634,7 +634,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
                           <button
                             onClick={handleCreateVehicle}
                             disabled={savingVehicle || !newVehicle.model}
-                            className="flex-1 py-1.5 text-xs bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-60"
+                            className="flex-1 py-1.5 text-xs bg-kawasaki-500 text-ink-950 rounded-lg font-medium hover:bg-kawasaki-400 disabled:opacity-60"
                           >
                             {savingVehicle
                               ? "Adicionando..."
@@ -732,7 +732,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
               <button
                 onClick={() => setStep(3)}
                 disabled={!canAdvanceStep2()}
-                className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60"
+                className="flex-1 py-2 bg-kawasaki-500 text-ink-950 rounded-lg text-sm font-medium hover:bg-kawasaki-400 disabled:opacity-60"
               >
                 Continuar
               </button>
@@ -741,7 +741,7 @@ export default function NovaOSModal({ open, onClose, onSuccess }: Props) {
               <button
                 onClick={handleSubmit}
                 disabled={saving || !totalValue}
-                className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60"
+                className="flex-1 py-2 bg-kawasaki-500 text-ink-950 rounded-lg text-sm font-medium hover:bg-kawasaki-400 disabled:opacity-60"
               >
                 {saving ? "Criando..." : "Criar OS"}
               </button>

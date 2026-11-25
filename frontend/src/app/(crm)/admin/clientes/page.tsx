@@ -13,6 +13,7 @@ import {
 import { useClients } from "@/lib/crm/use-crm";
 import { crm } from "@/lib/crm/api";
 import OSActionsWidget from "@/components/crm/OSActionsWidget";
+import { Plate } from "@/components/crm/Plate";
 
 function waLink(phone: string) {
   const digits = phone.replace(/\D/g, "");
@@ -22,9 +23,9 @@ function waLink(phone: string) {
 const VEHICLE_TYPES = ["SEDAN", "SUV", "HATCH", "PICKUP", "MOTO", "OUTRO"];
 
 const inputCls =
-  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500";
 const inputSmCls =
-  "px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500";
+  "px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg text-xs bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-kawasaki-500";
 
 function Avatar({ name }: { name: string }) {
   const initials = name
@@ -34,7 +35,7 @@ function Avatar({ name }: { name: string }) {
     .join("")
     .toUpperCase();
   const colors = [
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+    "bg-kawasaki-100 text-kawasaki-800 dark:bg-kawasaki-900/40 dark:text-kawasaki-300",
     "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300",
     "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
     "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
@@ -174,7 +175,7 @@ export default function ClientesPage() {
       };
     return {
       label: "Regular",
-      cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+      cls: "bg-kawasaki-100 text-kawasaki-800 dark:bg-kawasaki-900/40 dark:text-kawasaki-300",
     };
   };
 
@@ -196,7 +197,7 @@ export default function ClientesPage() {
               setForm({ name: "", phone: "", notes: "" });
               setModal("client");
             }}
-            className="flex items-center gap-2 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 bg-kawasaki-500 text-ink-950 text-sm px-4 py-2 rounded-lg hover:bg-kawasaki-400 transition-colors"
           >
             <Plus size={16} /> Novo cliente
           </button>
@@ -214,7 +215,7 @@ export default function ClientesPage() {
           value={search}
           onChange={(e) => handleSearch(e.target.value)}
           placeholder="Buscar por nome, telefone ou placa…"
-          className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full pl-9 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500"
         />
       </div>
 
@@ -358,7 +359,7 @@ export default function ClientesPage() {
             <button
               onClick={handleSaveClient}
               disabled={saving || !form.name || !form.phone}
-              className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60"
+              className="flex-1 py-2 bg-kawasaki-500 text-ink-950 rounded-lg text-sm font-medium hover:bg-kawasaki-400 disabled:opacity-60"
             >
               {saving ? "Salvando..." : "Salvar"}
             </button>
@@ -405,7 +406,7 @@ export default function ClientesPage() {
                 </div>
                 <button
                   onClick={() => openEdit(detail)}
-                  className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                  className="text-xs text-kawasaki-700 dark:text-kawasaki-400 hover:underline"
                 >
                   Editar dados
                 </button>
@@ -430,9 +431,7 @@ export default function ClientesPage() {
                         className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2"
                       >
                         <div>
-                          <span className="font-mono text-xs text-gray-700 dark:text-gray-300 font-semibold">
-                            {v.plate}
-                          </span>
+                          <Plate plate={v.plate} className="mr-1.5" />
                           <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
                             {v.model} {v.color && `· ${v.color}`} · {v.type}
                           </span>

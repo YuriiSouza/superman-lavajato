@@ -15,6 +15,54 @@ interface ProgressionParams {
   serviceId?: string;
 }
 
+// Fuso do negócio: vendas são agrupadas pelo dia/hora de Brasília, independente
+// do fuso do servidor (toISOString() usaria UTC e jogaria as vendas depois das
+// 21h para o dia seguinte).
+const BUSINESS_TZ = "America/Sao_Paulo";
+
+/** "YYYY-MM-DD" do instante `d` no fuso do negócio. */
+function dayKey(d: Date): string {
+  return d.toLocaleDateString("sv-SE", { timeZone: BUSINESS_TZ });
+}
+
+/** Todos os dias (YYYY-MM-DD) de `start` a `end`, inclusive, no fuso do negócio. */
+function dayKeysBetween(start: Date, end: Date): string[] {
+  const keys: string[] = [];
+  const last = dayKey(end);
+  // Itera em UTC sobre datas "puras" para não depender do fuso do servidor
+  const cur = new Date(`${dayKey(start)}T00:00:00Z`);
+  for (let k = dayKey(start); k <= last; ) {
+    keys.push(k);
+    cur.setUTCDate(cur.getUTCDate() + 1);
+    k = cur.toISOString().slice(0, 10);
+  }
+  return keys;
+}
+
+const weekdayHourFmt = new Intl.DateTimeFormat("en-US", {
+  timeZone: BUSINESS_TZ,
+  weekday: "short",
+  hour: "numeric",
+  hourCycle: "h23",
+});
+const WEEKDAY_INDEX: Record<string, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+};
+
+/** Dia da semana (0 = domingo) e hora (0–23) de `d` no fuso do negócio. */
+function weekdayAndHour(d: Date): { weekday: number; hour: number } {
+  const parts = weekdayHourFmt.formatToParts(d);
+  const wd = parts.find((p) => p.type === "weekday")!.value;
+  const hour = Number(parts.find((p) => p.type === "hour")!.value);
+  return { weekday: WEEKDAY_INDEX[wd], hour };
+}
+
 @Injectable()
 export class GetFinancialUseCase {
   constructor(private readonly prisma: PrismaService) {}
@@ -100,19 +148,10 @@ export class GetFinancialUseCase {
 
     // Build a slot for every calendar day in range
     const byDay: Record<string, number> = {};
-    const cur = new Date(
-      start.getFullYear(),
-      start.getMonth(),
-      start.getDate(),
-    );
-    const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-    while (cur <= endDay) {
-      byDay[cur.toISOString().split("T")[0]] = 0;
-      cur.setDate(cur.getDate() + 1);
-    }
+    for (const key of dayKeysBetween(start, end)) byDay[key] = 0;
 
     for (const o of orders) {
-      const key = new Date(o.createdAt).toISOString().split("T")[0];
+      const key = dayKey(new Date(o.createdAt));
       if (key in byDay) byDay[key] += Number(o.totalValue);
     }
 
@@ -142,20 +181,11 @@ export class GetFinancialUseCase {
     });
 
     const byDay: Record<string, Record<string, number>> = {};
-    const cur = new Date(
-      start.getFullYear(),
-      start.getMonth(),
-      start.getDate(),
-    );
-    const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-    while (cur <= endDay) {
-      byDay[cur.toISOString().split("T")[0]] = {};
-      cur.setDate(cur.getDate() + 1);
-    }
+    for (const key of dayKeysBetween(start, end)) byDay[key] = {};
 
     const serviceNames = new Set<string>();
     for (const o of orders) {
-      const key = new Date(o.createdAt).toISOString().split("T")[0];
+      const key = dayKey(new Date(o.createdAt));
       const svc = o.service.name;
       serviceNames.add(svc);
       if (key in byDay) {
@@ -520,8 +550,8 @@ export class GetFinancialUseCase {
       Array(24).fill(0),
     );
     for (const o of orders) {
-      const d = new Date(o.createdAt);
-      matrix[d.getDay()][d.getHours()]++;
+      const { weekday, hour } = weekdayAndHour(new Date(o.createdAt));
+      matrix[weekday][hour]++;
     }
 
     return { matrix, days };

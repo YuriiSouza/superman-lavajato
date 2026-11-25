@@ -92,14 +92,14 @@ function DreBarChart({ months }: { months: any[] }) {
               <span
                 className={
                   enriched[hov].netProfit >= 0
-                    ? "text-blue-600"
+                    ? "text-kawasaki-700"
                     : "text-red-600"
                 }
               >
                 Lucro Líquido
               </span>
               <span
-                className={`font-semibold ${enriched[hov].netProfit >= 0 ? "text-blue-600" : "text-red-600"}`}
+                className={`font-semibold ${enriched[hov].netProfit >= 0 ? "text-kawasaki-700" : "text-red-600"}`}
               >
                 {enriched[hov].netProfit < 0 ? "-" : ""}
                 {fmt(enriched[hov].netProfit)}
@@ -278,7 +278,7 @@ export default function ResultadoPage() {
                 }}
                 className={`px-3 py-1.5 transition-colors ${
                   months === m
-                    ? "bg-blue-600 text-white"
+                    ? "bg-kawasaki-500 text-ink-950"
                     : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                 }`}
               >
@@ -357,7 +357,7 @@ export default function ResultadoPage() {
               <div
                 className={`rounded-xl border p-4 ${
                   data.totals.netProfit >= 0
-                    ? "bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800"
+                    ? "bg-kawasaki-50 dark:bg-kawasaki-950/30 border-kawasaki-200 dark:border-kawasaki-800"
                     : "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800"
                 }`}
               >
@@ -365,14 +365,14 @@ export default function ResultadoPage() {
                   <div
                     className={`w-7 h-7 rounded-lg flex items-center justify-center ${
                       data.totals.netProfit >= 0
-                        ? "bg-blue-100 dark:bg-blue-900/40"
+                        ? "bg-kawasaki-100 dark:bg-kawasaki-900/40"
                         : "bg-red-100 dark:bg-red-900/40"
                     }`}
                   >
                     {data.totals.netProfit >= 0 ? (
                       <TrendingUp
                         size={14}
-                        className="text-blue-600 dark:text-blue-400"
+                        className="text-kawasaki-700 dark:text-kawasaki-400"
                       />
                     ) : (
                       <TrendingDown size={14} className="text-red-500" />
@@ -385,7 +385,7 @@ export default function ResultadoPage() {
                 <p
                   className={`text-lg font-bold ${
                     data.totals.netProfit >= 0
-                      ? "text-blue-600 dark:text-blue-400"
+                      ? "text-kawasaki-700 dark:text-kawasaki-400"
                       : "text-red-600 dark:text-red-400"
                   }`}
                 >

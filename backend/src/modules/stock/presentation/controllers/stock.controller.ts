@@ -24,6 +24,8 @@ import {
 } from "class-validator";
 import { Type } from "class-transformer";
 import { JwtAuthGuard } from "../../../auth/presentation/guards/jwt-auth.guard";
+import { RolesGuard } from "../../../auth/presentation/guards/roles.guard";
+import { Roles } from "../../../auth/presentation/decorators/roles.decorator";
 import { PrismaService } from "../../../../infrastructure/prisma/prisma.service";
 
 class CreateProductDto {
@@ -56,7 +58,9 @@ class ProductUsageDto {
 
 @ApiTags("stock")
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard)
+// RolesGuard só restringe rotas com @Roles; as demais seguem abertas a qualquer
+// usuário logado (ex.: CAIXA registra contagem)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @Controller("stock")
 export class StockController {
   constructor(private readonly prisma: PrismaService) {}
@@ -72,6 +76,7 @@ export class StockController {
   }
 
   @Post("products")
+  @Roles("ADMIN")
   @ApiOperation({ summary: "Criar produto" })
   async createProduct(@Body() dto: CreateProductDto) {
     return this.prisma.product.create({
@@ -85,12 +90,14 @@ export class StockController {
   }
 
   @Put("products/:id")
+  @Roles("ADMIN")
   @ApiOperation({ summary: "Atualizar produto" })
   async updateProduct(@Param("id") id: string, @Body() dto: UpdateProductDto) {
     return this.prisma.product.update({ where: { id }, data: dto });
   }
 
   @Delete("products/:id")
+  @Roles("ADMIN")
   @ApiOperation({ summary: "Remover produto" })
   async deleteProduct(@Param("id") id: string) {
     return this.prisma.product.delete({ where: { id } });

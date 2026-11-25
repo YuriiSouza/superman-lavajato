@@ -19,18 +19,24 @@ const include = {
   payments: true,
 };
 
-// Chaves de cache relacionadas a OS — invalidadas em qualquer mutação
-const OS_CACHE_KEYS = ["os:today", "os:list", "cash:today"];
+// Chaves de cache fixas afetadas por OS — invalidadas em qualquer mutação
+const OS_CACHE_KEYS = ["os:today", "cash:today", "dashboard"];
 
 @Injectable()
 export class PrismaServiceOrdersRepository {
+  // cache.del não aceita prefixo: guardamos as chaves `os:list:{filtros}`
+  // criadas para poder apagar todas numa mutação
+  private readonly listCacheKeys = new Set<string>();
+
   constructor(
     private readonly prisma: PrismaService,
     @Inject(CACHE_MANAGER) private readonly cache: Cache,
   ) {}
 
   private async invalidateOsCache() {
-    await Promise.all(OS_CACHE_KEYS.map((k) => this.cache.del(k)));
+    const keys = [...OS_CACHE_KEYS, ...this.listCacheKeys];
+    this.listCacheKeys.clear();
+    await Promise.all(keys.map((k) => this.cache.del(k)));
   }
 
   async findAll(filters?: {
@@ -60,6 +66,7 @@ export class PrismaServiceOrdersRepository {
     });
 
     await this.cache.set(cacheKey, result, 15_000);
+    this.listCacheKeys.add(cacheKey);
     return result;
   }
 

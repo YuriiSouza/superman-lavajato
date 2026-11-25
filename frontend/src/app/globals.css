@@ -15,6 +15,21 @@
   --color-kawasaki-700: #407316;
   --color-kawasaki-800: #355b17;
   --color-kawasaki-900: #2d4d18;
+  --color-kawasaki-950: #172a0b;
+
+  /* Água — reservado ao status "Em andamento" (o carro está sendo lavado).
+     Não usar como cor de ação: ação principal é sempre Kawasaki. */
+  --color-agua-50: #eef6fc;
+  --color-agua-100: #d6e8f6;
+  --color-agua-200: #aed0ec;
+  --color-agua-300: #7fb3df;
+  --color-agua-400: #5598d3;
+  --color-agua-500: #3a86c8;
+  --color-agua-600: #2d6ca6;
+  --color-agua-700: #255786;
+  --color-agua-800: #1f466a;
+  --color-agua-900: #1a3a57;
+  --color-agua-950: #10253a;
 
   /* Tons automotivos escuros */
   --color-ink-950: #0a0a0b;
@@ -23,6 +38,8 @@
   --color-ink-700: #26262b;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-barlow-condensed), var(--font-inter),
+    ui-sans-serif, system-ui, sans-serif;
 
   --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
@@ -37,6 +54,26 @@
   100% {
     box-shadow: 0 0 0 0 rgba(107, 191, 35, 0);
   }
+}
+
+/* Cores de série dos gráficos (identidade, ordem fixa — nunca reciclar).
+   Validadas com o validador de paleta: claro sobre #ffffff, escuro sobre
+   #111827 (bg-gray-900). Slot 1 é o verde da marca. */
+:root {
+  --chart-1: #539817;
+  --chart-2: #2a78d6;
+  --chart-3: #eb6834;
+  --chart-4: #6250d6;
+  --chart-5: #eda100;
+  --chart-6: #e87ba4;
+}
+.dark {
+  --chart-1: #539817;
+  --chart-2: #3987e5;
+  --chart-3: #d95926;
+  --chart-4: #9085e9;
+  --chart-5: #c98500;
+  --chart-6: #d55181;
 }
 
 html {

@@ -3,10 +3,6 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
-  DollarSign,
-  Zap,
-  TrendingDown,
-  AlertCircle,
   Plus,
   Download,
   MessageCircle,
@@ -21,26 +17,13 @@ import {
 import Link from "next/link";
 import { crm } from "@/lib/crm/api";
 import OSActionsWidget from "@/components/crm/OSActionsWidget";
+import { ORDER_STATUS_LABEL, ORDER_STATUS_STYLE } from "@/lib/crm/status";
+import { Plate } from "@/components/crm/Plate";
 
 // ─── constants ───────────────────────────────────────────────────────────────
 
-const STATUS_LABEL: Record<string, string> = {
-  PENDENTE: "Aguardando",
-  EM_ANDAMENTO: "Em andamento",
-  CONCLUIDO: "Concluído",
-  PAGO: "Pago",
-  CANCELADO: "Cancelado",
-};
-const STATUS_COLOR: Record<string, string> = {
-  PENDENTE:
-    "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
-  EM_ANDAMENTO:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
-  CONCLUIDO:
-    "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
-  PAGO: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
-  CANCELADO: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
-};
+const STATUS_LABEL = ORDER_STATUS_LABEL;
+const STATUS_COLOR = ORDER_STATUS_STYLE;
 
 const PERIOD_TABS = [
   { key: "today", label: "Hoje" },
@@ -52,7 +35,8 @@ const PERIOD_TABS = [
 ] as const;
 type Period = (typeof PERIOD_TABS)[number]["key"];
 
-const CHART_COLORS = ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ef4444"];
+// Cores de série definidas em globals.css (--chart-1..6), uma versão por tema
+const CHART_COLORS = [1, 2, 3, 4, 5, 6].map((n) => `var(--chart-${n})`);
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 const DAY_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
@@ -263,7 +247,7 @@ function MultiLineChart({
             ))
           ) : (
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-blue-500 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-[var(--chart-1)] shrink-0" />
               <span className="text-gray-500 dark:text-gray-400">
                 Faturamento
               </span>
@@ -282,8 +266,8 @@ function MultiLineChart({
       >
         <defs>
           <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.01" />
+            <stop offset="0%" stopColor="var(--chart-1)" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="var(--chart-1)" stopOpacity="0.01" />
           </linearGradient>
         </defs>
 
@@ -323,7 +307,7 @@ function MultiLineChart({
                 <polyline
                   points={pts}
                   fill="none"
-                  stroke="#3b82f6"
+                  stroke="var(--chart-1)"
                   strokeWidth="2"
                   strokeLinejoin="round"
                   strokeLinecap="round"
@@ -336,7 +320,7 @@ function MultiLineChart({
                         cx={tx(i)}
                         cy={ty(d.revenue)}
                         r={hovIdx === i ? 4 : 2.5}
-                        fill="#3b82f6"
+                        fill="var(--chart-1)"
                         stroke="white"
                         strokeWidth="1.2"
                         style={{ transition: "r 0.1s" }}
@@ -460,7 +444,7 @@ function ServiceFilterPicker({
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
           value
-            ? "border-blue-500 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300"
+            ? "border-kawasaki-500 bg-kawasaki-50 dark:bg-kawasaki-950/50 text-kawasaki-800 dark:text-kawasaki-300"
             : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500"
         }`}
       >
@@ -491,7 +475,7 @@ function ServiceFilterPicker({
             }}
             className={`w-full text-left px-3 py-2 text-xs transition-colors ${
               !value
-                ? "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-medium"
+                ? "bg-kawasaki-50 dark:bg-kawasaki-950/50 text-kawasaki-800 dark:text-kawasaki-300 font-medium"
                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
             }`}
           >
@@ -506,7 +490,7 @@ function ServiceFilterPicker({
               }}
               className={`w-full text-left px-3 py-2 text-xs transition-colors ${
                 value === s.id
-                  ? "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-medium"
+                  ? "bg-kawasaki-50 dark:bg-kawasaki-950/50 text-kawasaki-800 dark:text-kawasaki-300 font-medium"
                   : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
               }`}
             >
@@ -685,30 +669,6 @@ function Heatmap({ matrix }: { matrix: number[][] }) {
           <span className="text-xs text-gray-400 dark:text-gray-500">Mais</span>
         </div>
       </div>
-    </div>
-  );
-}
-
-// ─── metric card ─────────────────────────────────────────────────────────────
-
-function Card({ icon: Icon, label, value, sub, color, onClick }: any) {
-  return (
-    <div
-      onClick={onClick}
-      className={`bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 ${onClick ? "cursor-pointer hover:border-blue-300 dark:hover:border-blue-700 transition-colors" : ""}`}
-    >
-      <div
-        className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${color}`}
-      >
-        <Icon size={16} />
-      </div>
-      <p className="text-xs text-gray-500 dark:text-gray-400 mb-0.5">{label}</p>
-      <p className="text-xl font-semibold text-gray-900 dark:text-gray-100 leading-tight">
-        {value}
-      </p>
-      {sub && (
-        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{sub}</p>
-      )}
     </div>
   );
 }
@@ -918,6 +878,7 @@ export default function DashboardPage() {
           {filtersReady && (
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {new Date().toLocaleDateString("pt-BR", {
+                timeZone: "America/Sao_Paulo",
                 weekday: "long",
                 day: "numeric",
                 month: "long",
@@ -985,7 +946,7 @@ export default function DashboardPage() {
         )}
 
         {loadingCharts && (
-          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-kawasaki-500 border-t-transparent rounded-full animate-spin" />
         )}
       </div>
 
@@ -1020,38 +981,53 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* ── KPI cards ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <Card
-          icon={DollarSign}
-          label={`Faturamento (${periodLabel})`}
-          value={fmt(summary?.total ?? 0)}
-          sub={`${summary?.ordersCount ?? 0} OS pagas`}
-          color="bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400"
-        />
-        <Card
-          icon={Zap}
-          label="Ticket médio"
-          value={fmt(summary?.avgTicket ?? 0)}
-          sub="no período"
-          color="bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400"
-        />
-        <Card
-          icon={AlertCircle}
-          label="Pendentes agora"
-          value={loadingInit ? "—" : (dash?.orders?.pending ?? 0)}
-          sub={`${dash?.orders?.active ?? 0} em andamento`}
-          color="bg-yellow-100 dark:bg-yellow-900/40 text-yellow-600 dark:text-yellow-400"
-          onClick={() => goOrders("PENDENTE")}
-        />
-        <Card
-          icon={TrendingDown}
-          label="Clientes sumidos"
-          value={loadingInit ? "—" : (dash?.clients?.churn ?? 0)}
-          sub={`de ${dash?.clients?.total ?? 0} clientes`}
-          color="bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400"
-        />
-      </div>
+      {/* ── painel principal: faturamento do período ──
+          Um número em destaque; os de ação (fila e clientes sumidos) ao lado. */}
+      <section className="grid overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900 lg:grid-cols-[1.4fr_1fr]">
+        <div className="p-5 md:p-6">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Faturamento · {periodLabel}
+          </p>
+          <p className="mt-1 font-display text-5xl font-semibold leading-none text-gray-900 dark:text-gray-100 md:text-6xl">
+            {fmt(summary?.total ?? 0)}
+          </p>
+          <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">
+            {summary?.ordersCount ?? 0} OS pagas, ticket médio de{" "}
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              {fmt(summary?.avgTicket ?? 0)}
+            </span>
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 border-t border-gray-100 dark:border-gray-800 lg:grid-cols-1 lg:border-l lg:border-t-0">
+          <button
+            type="button"
+            onClick={() => goOrders("PENDENTE")}
+            className="border-r border-gray-100 p-5 text-left transition-colors hover:bg-gray-50 dark:border-gray-800 dark:hover:bg-gray-800/50 lg:border-b lg:border-r-0"
+          >
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Aguardando agora
+            </p>
+            <p className="mt-1 font-display text-3xl font-semibold leading-none text-gray-900 dark:text-gray-100">
+              {loadingInit ? "—" : (dash?.orders?.pending ?? 0)}
+            </p>
+            <p className="mt-1.5 text-xs text-agua-700 dark:text-agua-300">
+              {dash?.orders?.active ?? 0} em andamento · ver fila
+            </p>
+          </button>
+          <div className="p-5">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Clientes sumidos
+            </p>
+            <p className="mt-1 font-display text-3xl font-semibold leading-none text-gray-900 dark:text-gray-100">
+              {loadingInit ? "—" : (dash?.clients?.churn ?? 0)}
+            </p>
+            <p className="mt-1.5 text-xs text-gray-400 dark:text-gray-500">
+              de {dash?.clients?.total ?? 0} clientes
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* ── line + donut ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -1066,12 +1042,12 @@ export default function DashboardPage() {
               onClick={() => setCompareServices((v) => !v)}
               className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                 compareServices
-                  ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 font-medium"
+                  ? "bg-kawasaki-50 dark:bg-kawasaki-900/30 border-kawasaki-300 dark:border-kawasaki-700 text-kawasaki-800 dark:text-kawasaki-400 font-medium"
                   : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full ${compareServices ? "bg-blue-500" : "bg-gray-400"}`}
+                className={`w-1.5 h-1.5 rounded-full ${compareServices ? "bg-kawasaki-500" : "bg-gray-400"}`}
               />
               Comparar serviços
             </button>
@@ -1133,10 +1109,10 @@ export default function DashboardPage() {
           }`}
         >
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-kawasaki-100 dark:bg-kawasaki-900/40 flex items-center justify-center">
               <TrendingUp
                 size={15}
-                className="text-blue-600 dark:text-blue-400"
+                className="text-kawasaki-700 dark:text-kawasaki-400"
               />
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -1146,7 +1122,7 @@ export default function DashboardPage() {
           <p
             className={`text-xl font-semibold leading-tight ${
               (profit?.netProfit ?? 0) >= 0
-                ? "text-blue-600 dark:text-blue-400"
+                ? "text-kawasaki-700 dark:text-kawasaki-400"
                 : "text-red-600"
             }`}
           >
@@ -1204,7 +1180,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href="/admin/contas"
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-kawasaki-700 dark:text-kawasaki-400 hover:underline"
             >
               Ver todas
             </Link>
@@ -1249,7 +1225,7 @@ export default function DashboardPage() {
             </h2>
             <Link
               href="/admin/ordens"
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-kawasaki-700 dark:text-kawasaki-400 hover:underline"
             >
               Ver todas
             </Link>
@@ -1264,9 +1240,7 @@ export default function DashboardPage() {
                 <div key={o.id} className="flex items-center gap-3 px-4 py-2.5">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-900 dark:text-gray-100 truncate">
-                      <span className="font-mono text-xs text-gray-400 dark:text-gray-500 mr-1">
-                        {o.vehicle?.plate}
-                      </span>
+                      <Plate plate={o.vehicle?.plate} className="mr-1.5" />
                       {o.client?.name}
                     </p>
                     <p className="text-xs text-gray-400 dark:text-gray-500">
@@ -1294,7 +1268,7 @@ export default function DashboardPage() {
             </h2>
             <Link
               href="/admin/reativacao"
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-kawasaki-700 dark:text-kawasaki-400 hover:underline"
             >
               Ver fila
             </Link>
@@ -1401,7 +1375,7 @@ export default function DashboardPage() {
                     onClick={() => isToday && router.push("/admin/financeiro")}
                     className={`grid grid-cols-2 md:grid-cols-[120px_1fr_1fr_1fr_1fr_110px_100px] gap-3 px-4 py-3 text-sm items-center ${
                       isToday
-                        ? "cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                        ? "cursor-pointer hover:bg-kawasaki-50 dark:hover:bg-kawasaki-950/30"
                         : ""
                     }`}
                   >
@@ -1409,7 +1383,7 @@ export default function DashboardPage() {
                       <p className="font-medium text-gray-900 dark:text-gray-100">
                         {fmtDate(d.date)}
                         {isToday && (
-                          <span className="ml-1.5 text-xs text-blue-600 dark:text-blue-400 font-normal">
+                          <span className="ml-1.5 text-xs text-kawasaki-700 dark:text-kawasaki-400 font-normal">
                             hoje
                           </span>
                         )}
