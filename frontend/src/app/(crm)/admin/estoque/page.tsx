@@ -39,7 +39,7 @@ function daysSince(iso: string | null): number | null {
 }
 
 const inputCls =
-  "w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-full text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500";
 
 export default function EstoquePage() {
   // CAIXA só registra contagem; cadastro de produto e custos ficam com o ADMIN
@@ -168,7 +168,7 @@ export default function EstoquePage() {
           {isAdmin && (
             <button
               onClick={() => setShowNew(true)}
-              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 text-xs px-3 py-2 rounded-lg transition-colors"
             >
               <Plus size={13} /> Novo produto
             </button>
@@ -381,8 +381,8 @@ export default function EstoquePage() {
             </div>
 
             <div className="overflow-y-auto flex-1 divide-y divide-gray-100 dark:divide-gray-700">
-              <div className="px-5 py-2 bg-blue-50 dark:bg-blue-900/20">
-                <p className="text-xs text-blue-600 dark:text-blue-400">
+              <div className="px-5 py-2 bg-kawasaki-50 dark:bg-kawasaki-900/20">
+                <p className="text-xs text-kawasaki-700 dark:text-kawasaki-400">
                   Informe a quantidade física de cada produto agora. Os valores
                   já estão pré-preenchidos com o estoque atual — altere apenas o
                   que mudou.
@@ -412,7 +412,7 @@ export default function EstoquePage() {
                           [p.id]: e.target.value,
                         }))
                       }
-                      className="w-24 text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-right bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-24 text-sm border border-gray-200 dark:border-gray-700 rounded-lg px-2 py-1.5 text-right bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500"
                     />
                     <span className="text-xs text-gray-400 dark:text-gray-500 w-12">
                       {p.unit}
@@ -441,7 +441,7 @@ export default function EstoquePage() {
                 className={`w-full py-2.5 rounded-xl text-sm font-medium transition-colors flex items-center justify-center gap-2 ${
                   countSaved
                     ? "bg-green-600 text-white"
-                    : "bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60"
+                    : "bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 disabled:opacity-60"
                 }`}
               >
                 {countSaved ? (
@@ -534,7 +534,7 @@ export default function EstoquePage() {
               </div>
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm py-2 rounded-lg mt-2 transition-colors"
+                className="w-full bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 text-sm py-2 rounded-lg mt-2 transition-colors"
               >
                 Salvar
               </button>

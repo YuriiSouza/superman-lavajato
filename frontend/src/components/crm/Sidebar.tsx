@@ -170,14 +170,15 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
             </p>
           </div>
         )}
-        {/* fechar drawer — renderizado apenas quando em modo mobile */}
+        {/* fechar drawer — só aparece no celular (abaixo de md) */}
         {onClose && (
           <button
             onClick={(e) => {
               e.stopPropagation();
               onClose();
             }}
-            className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0 cursor-pointer touch-manipulation"
+            aria-label="Fechar menu"
+            className="md:hidden p-1.5 rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0 cursor-pointer touch-manipulation"
           >
             <X size={18} />
           </button>
@@ -219,7 +220,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
                       collapsed ? "justify-center px-0" : "px-4"
                     } ${
                       active
-                        ? "bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-medium border-blue-500"
+                        ? "bg-kawasaki-50 dark:bg-kawasaki-950 text-kawasaki-700 dark:text-kawasaki-400 font-medium border-kawasaki-500"
                         : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 border-transparent"
                     }`}
                   >

@@ -117,7 +117,7 @@ export default function ReceberPagamentoModal({
                 <select
                   value={entry.method}
                   onChange={(e) => setEntry(i, "method", e.target.value)}
-                  className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-shrink-0"
+                  className="text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500 flex-shrink-0"
                 >
                   {METODOS.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -140,7 +140,7 @@ export default function ReceberPagamentoModal({
                       if (!entry.amount && remaining > 0) fillRemaining(i);
                     }}
                     placeholder="0,00"
-                    className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg pl-8 pr-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg pl-8 pr-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500"
                   />
                 </div>
 
@@ -181,7 +181,7 @@ export default function ReceberPagamentoModal({
           {/* adicionar forma */}
           <button
             onClick={addEntry}
-            className="flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            className="flex items-center gap-1.5 text-sm text-kawasaki-700 dark:text-kawasaki-400 hover:underline"
           >
             <Plus size={14} /> Adicionar outra forma de pagamento
           </button>

@@ -19,7 +19,7 @@ const STATUS_COLOR: Record<string, string> = {
   PENDENTE:
     "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
   EM_ANDAMENTO:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
+    "bg-agua-100 text-agua-700 dark:bg-agua-900/40 dark:text-agua-300",
   CONCLUIDO:
     "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
 };
@@ -78,7 +78,7 @@ export default function OSActionsWidget({
       <div className="flex gap-2">
         <button
           onClick={() => setNovaOS(true)}
-          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 text-xs px-3 py-2 rounded-lg transition-colors"
         >
           <Plus size={13} /> Nova OS
         </button>
@@ -195,7 +195,7 @@ export default function OSActionsWidget({
                               .then(loadOpenOrders);
                           }
                         }}
-                        className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0 cursor-pointer"
+                        className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kawasaki-500 shrink-0 cursor-pointer"
                       >
                         {[
                           "PENDENTE",
@@ -229,7 +229,7 @@ export default function OSActionsWidget({
                   setOsModal(false);
                   setNovaOS(true);
                 }}
-                className="flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline"
+                className="flex items-center gap-1.5 text-sm text-kawasaki-700 dark:text-kawasaki-400 font-medium hover:underline"
               >
                 <Plus size={14} /> Nova OS
               </button>

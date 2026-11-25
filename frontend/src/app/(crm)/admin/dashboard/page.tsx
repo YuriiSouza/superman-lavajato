@@ -35,7 +35,7 @@ const STATUS_COLOR: Record<string, string> = {
   PENDENTE:
     "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
   EM_ANDAMENTO:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
+    "bg-agua-100 text-agua-700 dark:bg-agua-900/40 dark:text-agua-300",
   CONCLUIDO:
     "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
   PAGO: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
@@ -460,7 +460,7 @@ function ServiceFilterPicker({
         onClick={() => setOpen((v) => !v)}
         className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
           value
-            ? "border-blue-500 bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300"
+            ? "border-kawasaki-500 bg-kawasaki-50 dark:bg-kawasaki-950/50 text-kawasaki-800 dark:text-kawasaki-300"
             : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500"
         }`}
       >
@@ -491,7 +491,7 @@ function ServiceFilterPicker({
             }}
             className={`w-full text-left px-3 py-2 text-xs transition-colors ${
               !value
-                ? "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-medium"
+                ? "bg-kawasaki-50 dark:bg-kawasaki-950/50 text-kawasaki-800 dark:text-kawasaki-300 font-medium"
                 : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
             }`}
           >
@@ -506,7 +506,7 @@ function ServiceFilterPicker({
               }}
               className={`w-full text-left px-3 py-2 text-xs transition-colors ${
                 value === s.id
-                  ? "bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-medium"
+                  ? "bg-kawasaki-50 dark:bg-kawasaki-950/50 text-kawasaki-800 dark:text-kawasaki-300 font-medium"
                   : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
               }`}
             >
@@ -695,7 +695,7 @@ function Card({ icon: Icon, label, value, sub, color, onClick }: any) {
   return (
     <div
       onClick={onClick}
-      className={`bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 ${onClick ? "cursor-pointer hover:border-blue-300 dark:hover:border-blue-700 transition-colors" : ""}`}
+      className={`bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4 ${onClick ? "cursor-pointer hover:border-kawasaki-300 dark:hover:border-kawasaki-700 transition-colors" : ""}`}
     >
       <div
         className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${color}`}
@@ -986,7 +986,7 @@ export default function DashboardPage() {
         )}
 
         {loadingCharts && (
-          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-kawasaki-500 border-t-transparent rounded-full animate-spin" />
         )}
       </div>
 
@@ -1067,12 +1067,12 @@ export default function DashboardPage() {
               onClick={() => setCompareServices((v) => !v)}
               className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition-colors ${
                 compareServices
-                  ? "bg-blue-50 dark:bg-blue-900/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-400 font-medium"
+                  ? "bg-kawasaki-50 dark:bg-kawasaki-900/30 border-kawasaki-300 dark:border-kawasaki-700 text-kawasaki-800 dark:text-kawasaki-400 font-medium"
                   : "border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
               }`}
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full ${compareServices ? "bg-blue-500" : "bg-gray-400"}`}
+                className={`w-1.5 h-1.5 rounded-full ${compareServices ? "bg-kawasaki-500" : "bg-gray-400"}`}
               />
               Comparar serviços
             </button>
@@ -1134,10 +1134,10 @@ export default function DashboardPage() {
           }`}
         >
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-kawasaki-100 dark:bg-kawasaki-900/40 flex items-center justify-center">
               <TrendingUp
                 size={15}
-                className="text-blue-600 dark:text-blue-400"
+                className="text-kawasaki-700 dark:text-kawasaki-400"
               />
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -1147,7 +1147,7 @@ export default function DashboardPage() {
           <p
             className={`text-xl font-semibold leading-tight ${
               (profit?.netProfit ?? 0) >= 0
-                ? "text-blue-600 dark:text-blue-400"
+                ? "text-kawasaki-700 dark:text-kawasaki-400"
                 : "text-red-600"
             }`}
           >
@@ -1205,7 +1205,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href="/admin/contas"
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-kawasaki-700 dark:text-kawasaki-400 hover:underline"
             >
               Ver todas
             </Link>
@@ -1250,7 +1250,7 @@ export default function DashboardPage() {
             </h2>
             <Link
               href="/admin/ordens"
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-kawasaki-700 dark:text-kawasaki-400 hover:underline"
             >
               Ver todas
             </Link>
@@ -1295,7 +1295,7 @@ export default function DashboardPage() {
             </h2>
             <Link
               href="/admin/reativacao"
-              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-xs text-kawasaki-700 dark:text-kawasaki-400 hover:underline"
             >
               Ver fila
             </Link>
@@ -1402,7 +1402,7 @@ export default function DashboardPage() {
                     onClick={() => isToday && router.push("/admin/financeiro")}
                     className={`grid grid-cols-2 md:grid-cols-[120px_1fr_1fr_1fr_1fr_110px_100px] gap-3 px-4 py-3 text-sm items-center ${
                       isToday
-                        ? "cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/30"
+                        ? "cursor-pointer hover:bg-kawasaki-50 dark:hover:bg-kawasaki-950/30"
                         : ""
                     }`}
                   >
@@ -1410,7 +1410,7 @@ export default function DashboardPage() {
                       <p className="font-medium text-gray-900 dark:text-gray-100">
                         {fmtDate(d.date)}
                         {isToday && (
-                          <span className="ml-1.5 text-xs text-blue-600 dark:text-blue-400 font-normal">
+                          <span className="ml-1.5 text-xs text-kawasaki-700 dark:text-kawasaki-400 font-normal">
                             hoje
                           </span>
                         )}

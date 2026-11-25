@@ -100,7 +100,7 @@ function Modal({ open, onClose, title, children }: any) {
 }
 
 const inputCls =
-  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500";
 
 // ── page ─────────────────────────────────────────────────────────────────────
 
@@ -409,7 +409,7 @@ export default function CaixaPage() {
         </div>
         <button
           onClick={openCashModal}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+          className="flex items-center gap-2 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 px-6 py-3 rounded-xl font-medium transition-colors"
         >
           <Unlock size={16} /> Abrir caixa
         </button>
@@ -465,7 +465,7 @@ export default function CaixaPage() {
             <button
               onClick={handleOpen}
               disabled={saving}
-              className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
+              className="w-full py-2.5 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
             >
               {saving ? "Abrindo..." : "Confirmar abertura"}
             </button>
@@ -587,7 +587,7 @@ export default function CaixaPage() {
             <>
               <button
                 onClick={() => setNovaOS(true)}
-                className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-1.5 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 text-xs px-3 py-2 rounded-lg transition-colors"
               >
                 <Plus size={13} /> Nova OS
               </button>
@@ -696,7 +696,7 @@ export default function CaixaPage() {
                       PENDENTE:
                         "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
                       EM_ANDAMENTO:
-                        "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
+                        "bg-agua-100 text-agua-700 dark:bg-agua-900/40 dark:text-agua-300",
                       CONCLUIDO:
                         "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
                     };
@@ -742,7 +742,7 @@ export default function CaixaPage() {
                                 .then(loadOpenOrders);
                             }
                           }}
-                          className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shrink-0 cursor-pointer"
+                          className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kawasaki-500 shrink-0 cursor-pointer"
                         >
                           {[
                             "PENDENTE",
@@ -777,7 +777,7 @@ export default function CaixaPage() {
                   setOsModal(false);
                   setNovaOS(true);
                 }}
-                className="flex items-center gap-1.5 text-sm text-blue-600 dark:text-blue-400 font-medium hover:underline"
+                className="flex items-center gap-1.5 text-sm text-kawasaki-700 dark:text-kawasaki-400 font-medium hover:underline"
               >
                 <Plus size={14} /> Nova OS
               </button>
@@ -867,7 +867,7 @@ export default function CaixaPage() {
 
             <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
               <div className="flex items-center gap-2 mb-2">
-                <Smartphone size={14} className="text-blue-500" />
+                <Smartphone size={14} className="text-kawasaki-600" />
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Digital (Pix + Cartão)
                 </p>
@@ -1074,7 +1074,7 @@ export default function CaixaPage() {
                     <span
                       className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${
                         f.source === "DIGITAL"
-                          ? "bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400"
+                          ? "bg-kawasaki-100 text-kawasaki-700 dark:bg-kawasaki-900/40 dark:text-kawasaki-400"
                           : "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400"
                       }`}
                     >
@@ -1480,7 +1480,7 @@ export default function CaixaPage() {
                       outflowSource === s
                         ? s === "FISICO"
                           ? "bg-emerald-600 text-white border-emerald-600"
-                          : "bg-blue-600 text-white border-blue-600"
+                          : "bg-kawasaki-500 text-ink-950 border-kawasaki-600"
                         : "border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
                     }`}
                   >
@@ -1558,7 +1558,7 @@ export default function CaixaPage() {
                 <span className="text-gray-700 dark:text-gray-300">
                   Saldo estimado
                 </span>
-                <span className="text-blue-600 dark:text-blue-400">
+                <span className="text-kawasaki-700 dark:text-kawasaki-400">
                   {fmt(digitalBalance)}
                 </span>
               </div>

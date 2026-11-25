@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { signIn, getSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -9,6 +10,11 @@ const HOME_BY_ROLE: Record<string, string> = {
   CAIXA: "/admin/financeiro",
   OPERADOR: "/admin/ordens",
 };
+
+// O login fica fora da área /admin (sem tema claro/escuro do CRM): usa sempre
+// a identidade da marca, a mesma do site público.
+const inputCls =
+  "w-full rounded-lg border border-white/15 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-white/35 transition-colors focus:border-kawasaki-500 focus:outline-none focus:ring-2 focus:ring-kawasaki-500/40";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -29,7 +35,7 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      setError("Email ou senha inválidos.");
+      setError("E-mail ou senha incorretos. Confira e tente de novo.");
       setLoading(false);
     } else {
       const session = await getSession();
@@ -39,62 +45,89 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 px-4">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Superman CRM
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Acesso restrito
-          </p>
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6 space-y-4 shadow-sm"
-        >
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              placeholder="admin@supermanlavajato.com.br"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Senha
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              autoComplete="current-password"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          {error && (
-            <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 px-3 py-2 rounded-lg">
-              {error}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold disabled:opacity-60 transition-colors"
-          >
-            {loading ? "Entrando..." : "Entrar"}
-          </button>
-        </form>
+    <div className="flex min-h-screen flex-col bg-ink-950 text-white lg:flex-row">
+      {/* foto da marca: faixa no topo no celular, metade da tela no desktop */}
+      <div className="relative h-44 shrink-0 sm:h-56 lg:h-auto lg:w-1/2">
+        <Image
+          src="/fotos/hero.png"
+          alt=""
+          fill
+          priority
+          sizes="(min-width: 1024px) 50vw, 100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-ink-950 lg:bg-gradient-to-r" />
       </div>
+
+      <main className="flex flex-1 items-start justify-center px-6 pb-12 lg:items-center lg:px-16 lg:py-12">
+        <div className="w-full max-w-sm">
+          <Image
+            src="/logo-white.png"
+            alt="Superman Estética Automotiva e Lava-Jato"
+            width={1024}
+            height={397}
+            priority
+            className="-ml-1 h-16 w-auto"
+          />
+          <h1 className="mt-8 text-2xl font-semibold">Entrar no sistema</h1>
+          <p className="mt-1.5 text-sm text-white/60">
+            Ordens de serviço, caixa e estoque do dia.
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+            <div>
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-medium text-white/80"
+              >
+                E-mail
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+                placeholder="voce@supermanlavajato.com.br"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="password"
+                className="mb-1.5 block text-sm font-medium text-white/80"
+              >
+                Senha
+              </label>
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+                className={inputCls}
+              />
+            </div>
+            {error && (
+              <p
+                role="alert"
+                className="rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-sm text-red-300"
+              >
+                {error}
+              </p>
+            )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-kawasaki-500 py-3 text-sm font-semibold text-ink-950 transition-colors hover:bg-kawasaki-400 disabled:opacity-60"
+            >
+              {loading ? "Entrando…" : "Entrar"}
+            </button>
+          </form>
+        </div>
+      </main>
     </div>
   );
 }

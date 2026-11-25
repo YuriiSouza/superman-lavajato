@@ -15,7 +15,7 @@ import {
 import { crm } from "@/lib/crm/api";
 
 const inputCls =
-  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500";
 
 const EMPTY_FORM = {
   name: "",
@@ -113,7 +113,7 @@ function CategorySection({
         className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <Tag size={15} className="text-blue-500" />
+          <Tag size={15} className="text-kawasaki-600" />
           <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
             Categorias de serviço
           </span>
@@ -139,7 +139,7 @@ function CategorySection({
               <button
                 onClick={handleCreate}
                 disabled={saving || !newName.trim()}
-                className="flex items-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 shrink-0"
+                className="flex items-center gap-1 px-3 py-2 bg-kawasaki-500 text-ink-950 rounded-lg text-sm font-medium hover:bg-kawasaki-400 disabled:opacity-60 shrink-0"
               >
                 <Plus size={14} /> Criar
               </button>
@@ -374,7 +374,7 @@ export default function ServicosPage() {
           </button>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 bg-kawasaki-500 text-ink-950 text-sm px-4 py-2 rounded-lg hover:bg-kawasaki-400 transition-colors"
           >
             <Plus size={15} /> Novo serviço
           </button>
@@ -416,7 +416,7 @@ export default function ServicosPage() {
               className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
             >
               <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-100 dark:border-gray-700">
-                <Tag size={13} className="text-blue-400" />
+                <Tag size={13} className="text-kawasaki-500" />
                 <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                   {group.label}
                 </span>
@@ -467,7 +467,7 @@ export default function ServicosPage() {
                       </button>
                       <button
                         onClick={() => openEdit(s)}
-                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                        className="p-1.5 rounded-lg text-gray-400 hover:text-kawasaki-700 dark:hover:text-kawasaki-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                       >
                         <Pencil size={14} />
                       </button>
@@ -595,7 +595,7 @@ export default function ServicosPage() {
               onChange={(e) =>
                 setForm({ ...form, highlight: e.target.checked })
               }
-              className="rounded border-gray-300 text-blue-600"
+              className="rounded border-gray-300 text-kawasaki-700"
             />
             <span className="text-xs text-gray-700 dark:text-gray-300">
               Destacar como "Mais escolhido" na landing page
@@ -612,7 +612,7 @@ export default function ServicosPage() {
             <button
               onClick={handleSave}
               disabled={saving || !form.name || !form.price || !form.duration}
-              className="flex-1 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 transition-colors"
+              className="flex-1 py-2 bg-kawasaki-500 text-ink-950 rounded-lg text-sm font-medium hover:bg-kawasaki-400 disabled:opacity-60 transition-colors"
             >
               {saving ? "Salvando..." : "Salvar"}
             </button>

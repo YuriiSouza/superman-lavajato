@@ -15,6 +15,21 @@
   --color-kawasaki-700: #407316;
   --color-kawasaki-800: #355b17;
   --color-kawasaki-900: #2d4d18;
+  --color-kawasaki-950: #172a0b;
+
+  /* Água — reservado ao status "Em andamento" (o carro está sendo lavado).
+     Não usar como cor de ação: ação principal é sempre Kawasaki. */
+  --color-agua-50: #eef6fc;
+  --color-agua-100: #d6e8f6;
+  --color-agua-200: #aed0ec;
+  --color-agua-300: #7fb3df;
+  --color-agua-400: #5598d3;
+  --color-agua-500: #3a86c8;
+  --color-agua-600: #2d6ca6;
+  --color-agua-700: #255786;
+  --color-agua-800: #1f466a;
+  --color-agua-900: #1a3a57;
+  --color-agua-950: #10253a;
 
   /* Tons automotivos escuros */
   --color-ink-950: #0a0a0b;

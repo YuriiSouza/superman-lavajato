@@ -23,7 +23,7 @@ function buildPreview(template: string) {
 }
 
 const inputCls =
-  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500";
+  "w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500";
 
 function Msg({
   msg,
@@ -225,7 +225,7 @@ export default function ConfiguracoesPage() {
           <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
             {/* Avatar + info */}
             <div className="flex items-center gap-4 px-6 py-5 border-b border-gray-100 dark:border-gray-700">
-              <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-700 dark:text-blue-400 font-bold text-base shrink-0">
+              <div className="w-12 h-12 rounded-full bg-kawasaki-100 dark:bg-kawasaki-900/40 flex items-center justify-center text-kawasaki-800 dark:text-kawasaki-400 font-bold text-base shrink-0">
                 {session?.user?.name?.[0]?.toUpperCase() ?? "A"}
               </div>
               <div className="min-w-0">
@@ -292,7 +292,7 @@ export default function ConfiguracoesPage() {
               <button
                 type="submit"
                 disabled={pwSaving}
-                className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
+                className="w-full py-2 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
               >
                 {pwSaving ? "Salvando..." : "Alterar senha"}
               </button>
@@ -556,7 +556,7 @@ export default function ConfiguracoesPage() {
                 <button
                   type="submit"
                   disabled={companySaving}
-                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
+                  className="w-full py-2.5 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
                 >
                   {companySaving
                     ? "Salvando..."
@@ -581,10 +581,10 @@ export default function ConfiguracoesPage() {
                       key={p.key}
                       type="button"
                       onClick={() => insertPlaceholder(p.key)}
-                      className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors font-mono"
+                      className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full border border-kawasaki-300 dark:border-kawasaki-700 bg-kawasaki-50 dark:bg-kawasaki-900/30 text-kawasaki-800 dark:text-kawasaki-400 hover:bg-kawasaki-100 dark:hover:bg-kawasaki-900/50 transition-colors font-mono"
                     >
                       {p.key}
-                      <span className="font-sans text-blue-400 dark:text-blue-500">
+                      <span className="font-sans text-kawasaki-500 dark:text-kawasaki-400">
                         → {p.label}
                       </span>
                     </button>
@@ -596,7 +596,7 @@ export default function ConfiguracoesPage() {
                   value={template}
                   onChange={(e) => setTemplate(e.target.value)}
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-mono"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500 resize-none font-mono"
                 />
 
                 <div className="rounded-lg bg-green-50 dark:bg-gray-800 border border-green-200 dark:border-gray-600 px-3 py-2.5">
@@ -621,7 +621,7 @@ export default function ConfiguracoesPage() {
                   <button
                     type="submit"
                     disabled={templateSaving}
-                    className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
+                    className="flex-1 py-2 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 rounded-lg text-sm font-medium disabled:opacity-60 transition-colors"
                   >
                     {templateSaving ? "Salvando..." : "Salvar template"}
                   </button>

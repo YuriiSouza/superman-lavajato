@@ -24,7 +24,7 @@ const STATUS_COLOR: Record<string, string> = {
   PENDENTE:
     "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-400",
   EM_ANDAMENTO:
-    "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400",
+    "bg-agua-100 text-agua-700 dark:bg-agua-900/40 dark:text-agua-300",
   CONCLUIDO:
     "bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400",
   PAGO: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
@@ -165,7 +165,7 @@ export default function OrdensPage() {
         </h1>
         <button
           onClick={() => setModal(true)}
-          className="flex items-center gap-2 bg-blue-600 text-white text-sm px-3 py-2 md:px-4 rounded-lg hover:bg-blue-700 transition-colors"
+          className="flex items-center gap-2 bg-kawasaki-500 text-ink-950 text-sm px-3 py-2 md:px-4 rounded-lg hover:bg-kawasaki-400 transition-colors"
         >
           <Plus size={16} /> <span className="hidden sm:inline">Nova OS</span>
           <span className="sm:hidden">Nova</span>
@@ -199,12 +199,12 @@ export default function OrdensPage() {
             type="date"
             value={date}
             onChange={(e) => handleDate(e.target.value)}
-            className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+            className="text-xs border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-kawasaki-500 cursor-pointer"
           />
           {date && (
             <>
               {isToday ? (
-                <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                <span className="text-xs text-kawasaki-700 dark:text-kawasaki-400 font-medium">
                   hoje
                 </span>
               ) : (
@@ -255,7 +255,9 @@ export default function OrdensPage() {
                     ].map((h) => (
                       <th
                         key={h}
-                        className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400"
+                        className={`px-4 py-3 text-xs font-medium text-gray-500 dark:text-gray-400 ${
+                          h === "Valor" ? "text-right" : "text-left"
+                        }`}
                       >
                         {h}
                       </th>
@@ -324,7 +326,7 @@ export default function OrdensPage() {
                       <td className="px-4 py-3 text-gray-500 dark:text-gray-400 text-xs">
                         {paymentSummary(o)}
                       </td>
-                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-gray-100">
+                      <td className="px-4 py-3 text-right font-medium text-gray-900 dark:text-gray-100">
                         {fmt(o.totalValue)}
                       </td>
                       <td className="px-4 py-3">
@@ -333,7 +335,7 @@ export default function OrdensPage() {
                           onChange={(e) =>
                             handleStatusChange(o, e.target.value)
                           }
-                          className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-blue-500 ${STATUS_COLOR[o.status]} bg-transparent`}
+                          className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-kawasaki-500 ${STATUS_COLOR[o.status]} bg-transparent`}
                         >
                           {STATUS_OPTIONS.map((s) => (
                             <option key={s} value={s}>
@@ -379,7 +381,7 @@ export default function OrdensPage() {
                     <select
                       value={o.status}
                       onChange={(e) => handleStatusChange(o, e.target.value)}
-                      className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-blue-500 ${STATUS_COLOR[o.status]} bg-transparent`}
+                      className={`text-xs px-2 py-1 rounded-full border-0 cursor-pointer font-medium focus:ring-2 focus:ring-kawasaki-500 ${STATUS_COLOR[o.status]} bg-transparent`}
                     >
                       {STATUS_OPTIONS.map((s) => (
                         <option key={s} value={s}>

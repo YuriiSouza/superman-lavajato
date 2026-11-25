@@ -32,7 +32,7 @@ const ROLE_LABEL: Record<Role, string> = {
 const ROLE_COLOR: Record<Role, string> = {
   ADMIN:
     "bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300",
-  CAIXA: "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300",
+  CAIXA: "bg-kawasaki-100 dark:bg-kawasaki-900/40 text-kawasaki-800 dark:text-kawasaki-300",
   OPERADOR: "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
 };
 
@@ -165,7 +165,7 @@ export default function UsuariosPage() {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-kawasaki-500 hover:bg-kawasaki-400 text-ink-950 text-sm px-4 py-2 rounded-lg transition-colors"
         >
           <Plus size={15} /> Novo usuário
         </button>
@@ -308,7 +308,7 @@ export default function UsuariosPage() {
                   type="text"
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
-                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500"
                   placeholder="Nome completo"
                 />
               </div>
@@ -321,7 +321,7 @@ export default function UsuariosPage() {
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                   disabled={modal !== "create"}
-                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500 disabled:opacity-50"
                   placeholder="email@exemplo.com"
                 />
               </div>
@@ -340,7 +340,7 @@ export default function UsuariosPage() {
                   onChange={(e) =>
                     setForm({ ...form, password: e.target.value })
                   }
-                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500"
                   placeholder="Mínimo 6 caracteres"
                 />
               </div>
@@ -353,7 +353,7 @@ export default function UsuariosPage() {
                   onChange={(e) =>
                     setForm({ ...form, role: e.target.value as Role })
                   }
-                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-kawasaki-500"
                 >
                   {currentRole === "ADMIN" && (
                     <option value="ADMIN">Administrador — acesso total</option>
@@ -375,7 +375,7 @@ export default function UsuariosPage() {
               <button
                 onClick={save}
                 disabled={saving}
-                className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white rounded-lg transition-colors"
+                className="px-4 py-2 text-sm bg-kawasaki-500 hover:bg-kawasaki-400 disabled:opacity-50 text-ink-950 rounded-lg transition-colors"
               >
                 {saving ? "Salvando…" : "Salvar"}
               </button>
